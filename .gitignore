@@ -1,0 +1,21 @@
+# Build artifacts
+/target/
+**/target/
+
+# Environment
+.env
+*.db
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Cargo lock for libraries (keep for workspace)
+# Cargo.lock is kept for reproducible builds

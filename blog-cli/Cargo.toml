@@ -1,0 +1,11 @@
+[package]
+name = "blog-cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+blog-client.workspace = true
+tokio.workspace = true
+clap.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

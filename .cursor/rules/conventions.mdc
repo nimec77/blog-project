@@ -1,0 +1,274 @@
+---
+alwaysApply: true
+---
+# Code Conventions
+
+> Reference: All architectural decisions are in [vision.md](./vision.md). This document covers code-level rules only.
+
+---
+
+## Core Principle
+
+**KISS** — Write the simplest code that works. No abstractions until needed twice.
+
+---
+
+## Code Style
+
+### Imports Order
+
+```rust
+// 1. Standard library
+use std::sync::Arc;
+
+// 2. External crates
+use tokio::sync::RwLock;
+use tonic::{Request, Response, Status};
+use tracing::info;
+
+// 3. Internal modules
+use crate::domain::User;
+use crate::application::AuthService;
+```
+
+### Naming
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Structs | PascalCase | `UserRepository`, `BlogService` |
+| Functions | snake_case | `find_by_id`, `create_post` |
+| Constants | SCREAMING_SNAKE | `DEFAULT_LIMIT`, `MAX_TITLE_LEN` |
+| Modules | snake_case | `http_handlers`, `grpc_service` |
+
+### Function Signatures
+
+```rust
+// Good: clear, typed, documented
+/// Creates a new post for the given author.
+pub async fn create_post(
+    &self,
+    author_id: i64,
+    req: CreatePostRequest,
+) -> Result<Post, AppError> {
+    // ...
+}
+
+// Bad: unclear, no docs
+pub async fn create(&self, id: i64, r: Req) -> Result<P, E> { }
+```
+
+---
+
+## Error Handling
+
+### One Error Enum Per Crate
+
+```rust
+// domain/error.rs
+#[derive(Debug, thiserror::Error)]
+pub enum AppError {
+    #[error("User not found")]
+    UserNotFound,
+    
+    #[error("Post not found")]
+    PostNotFound,
+    
+    #[error("Invalid credentials")]
+    InvalidCredentials,
+    
+    #[error("Forbidden")]
+    Forbidden,
+    
+    #[error("Database error: {0}")]
+    Database(#[from] sqlx::Error),
+    
+    #[error("JWT error: {0}")]
+    Jwt(#[from] jsonwebtoken::errors::Error),
+}
+```
+
+### Error Propagation
+
+```rust
+// Good: use ? operator
+pub async fn get_post(&self, id: i64) -> Result<Post, AppError> {
+    let post = self.repo.find_by_id(id).await?
+        .ok_or(AppError::PostNotFound)?;
+    Ok(post)
+}
+
+// Bad: manual matching everywhere
+pub async fn get_post(&self, id: i64) -> Result<Post, AppError> {
+    match self.repo.find_by_id(id).await {
+        Ok(Some(post)) => Ok(post),
+        Ok(None) => Err(AppError::PostNotFound),
+        Err(e) => Err(AppError::Database(e)),
+    }
+}
+```
+
+---
+
+## Validation
+
+### Validate at Boundaries Only
+
+```rust
+// Good: validate in handler, trust internal code
+async fn create_post(
+    auth: AuthenticatedUser,
+    req: web::Json<CreatePostRequest>,
+) -> Result<impl Responder, AppError> {
+    // Validate here
+    if req.title.is_empty() {
+        return Err(AppError::ValidationError("Title required".into()));
+    }
+    
+    // Service trusts input is valid
+    let post = service.create_post(auth.user_id, req.into_inner()).await?;
+    Ok(HttpResponse::Created().json(post))
+}
+
+// Bad: re-validate in every layer
+impl BlogService {
+    pub async fn create_post(&self, ...) -> Result<Post> {
+        if req.title.is_empty() { // Redundant!
+            return Err(...);
+        }
+    }
+}
+```
+
+---
+
+## Logging
+
+### Use Structured Logging
+
+```rust
+// Good: structured fields
+tracing::info!(
+    user_id = %user.id,
+    username = %user.username,
+    "User registered"
+);
+
+// Bad: string interpolation
+println!("User registered: {} {}", user.id, user.username);
+```
+
+### Never Log Sensitive Data
+
+```rust
+// Good
+tracing::info!(username = %req.username, "Login attempt");
+
+// Bad — NEVER do this
+tracing::info!(password = %req.password, "Login attempt");
+```
+
+---
+
+## Testing
+
+### Test File Location
+
+```rust
+// Unit tests: same file
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_post_new() {
+        let post = Post::new(1, "Title".into(), "Content".into());
+        assert_eq!(post.title, "Title");
+    }
+}
+
+// Integration tests: tests/ folder
+// tests/api_tests.rs
+```
+
+### Async Tests
+
+```rust
+#[tokio::test]
+async fn test_create_post() {
+    let pool = setup_test_db().await;
+    let service = BlogService::new(pool);
+    
+    let post = service.create_post(1, CreatePostRequest {
+        title: "Test".into(),
+        content: "Content".into(),
+    }).await.unwrap();
+    
+    assert_eq!(post.title, "Test");
+}
+```
+
+### Test Naming
+
+```rust
+// Pattern: test_<function>_<scenario>
+#[test]
+fn test_post_new_creates_with_current_timestamp() { }
+
+#[test]
+fn test_post_new_fails_with_empty_title() { }
+```
+
+---
+
+## What NOT To Do
+
+| Don't | Do Instead |
+|-------|------------|
+| `unwrap()` in production code | `?` or explicit error handling |
+| `println!` for logging | `tracing::info!`, `tracing::error!` |
+| Nested `if-else` chains | Early returns with `?` |
+| Magic numbers | Named constants |
+| Comments explaining *what* | Self-documenting code |
+| Over-abstracting | Abstractions only when needed twice |
+| `clone()` everywhere | Borrow when possible |
+| Panics in libraries | Return `Result` |
+
+---
+
+## File Size Limits
+
+| Threshold | Action |
+|-----------|--------|
+| < 200 lines | ✅ Good |
+| 200-400 lines | ⚠️ Consider splitting |
+| > 400 lines | 🔴 Must split |
+
+---
+
+## Commit Messages
+
+```
+<type>: <short description>
+
+Types: feat, fix, refactor, test, docs, chore
+```
+
+Examples:
+- `feat: add user registration endpoint`
+- `fix: handle empty post title validation`
+- `refactor: extract JWT logic to separate module`
+
+---
+
+## Quick Checklist
+
+Before committing:
+
+- [ ] No `unwrap()` in production code
+- [ ] No `println!` (use tracing)
+- [ ] Public functions have `///` doc comments
+- [ ] Tests for happy path + one error case
+- [ ] No sensitive data in logs
+- [ ] Imports organized (std → external → internal)
+- [ ] File under 400 lines
+

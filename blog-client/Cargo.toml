@@ -1,0 +1,11 @@
+[package]
+name = "blog-client"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+blog-shared.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+thiserror.workspace = true
