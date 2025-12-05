@@ -7,7 +7,7 @@
 | 1. Workspace Setup | ✅ Complete | 8/8 | All crates created |
 | 2. Shared Types | ✅ Complete | 3/3 | DTOs with tests |
 | 3. Server Core | ✅ Complete | 6/6 | Server starts, /health works |
-| 4. Auth API | ⬜ Not Started | 0/4 | — |
+| 4. Auth API | ✅ Complete | 4/4 | Register + Login work |
 | 5. Posts API | ⬜ Not Started | 0/5 | — |
 | 6. gRPC API | ⬜ Not Started | 0/4 | — |
 | 7. Client Library | ⬜ Not Started | 0/4 | — |
@@ -67,10 +67,10 @@
 
 **Goal:** User registration and login work.
 
-- [ ] 4.1 Create `data/user_repository.rs`
-- [ ] 4.2 Create `infrastructure/jwt.rs`
-- [ ] 4.3 Create `application/auth_service.rs`
-- [ ] 4.4 Create `presentation/http_handlers.rs` (auth endpoints)
+- [x] 4.1 Create `data/user_repository.rs`
+- [x] 4.2 Create `infrastructure/jwt.rs`
+- [x] 4.3 Create `application/auth_service.rs`
+- [x] 4.4 Create `presentation/http_handlers.rs` (auth endpoints)
 
 **✓ Test:** 
 ```bash
@@ -84,6 +84,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   -d '{"username":"test","password":"secret123"}'
 # Returns: {"token":"...", "user":{...}}
 ```
+✅
 
 ---
 

@@ -237,6 +237,114 @@ fn test_post_new_fails_with_empty_title() { }
 
 ---
 
+## Architecture Patterns
+
+### Config Returns Result
+
+```rust
+// Good: returns Result, caller decides how to handle
+impl AppConfig {
+    pub fn from_env() -> Result<Self, AppError> {
+        dotenvy::dotenv().ok();
+        let database_url = std::env::var(ENV_DATABASE_URL)
+            .map_err(|_| AppError::Config("DATABASE_URL must be set".into()))?;
+        Ok(Self { database_url, ... })
+    }
+}
+
+// In main.rs
+let config = AppConfig::from_env().expect("invalid configuration");
+```
+
+### Database Functions Return Result
+
+```rust
+// Good: separate functions, return Result
+pub async fn create_pool(database_url: &str) -> Result<SqlitePool, sqlx::Error> {
+    SqlitePoolOptions::new()
+        .max_connections(DB_MAX_CONNECTIONS)
+        .connect(database_url)
+        .await
+}
+
+pub async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    sqlx::migrate!().run(pool).await
+}
+```
+
+### Repository Pattern
+
+```rust
+// Implementation uses Clone for sharing
+#[derive(Clone)]
+pub struct UserRepository {
+    pool: SqlitePool,
+}
+
+impl UserRepository {
+    pub fn new(pool: SqlitePool) -> Self { Self { pool } }
+    pub async fn find_by_id(&self, id: i64) -> Result<Option<User>, AppError> { ... }
+}
+```
+
+### Services Use Arc for Dependencies
+
+```rust
+// Good: Arc for shared ownership
+pub struct AuthService {
+    repo: Arc<UserRepository>,
+    jwt_secret: String,
+}
+
+impl AuthService {
+    pub fn new(repo: Arc<UserRepository>, jwt_secret: String) -> Self {
+        Self { repo, jwt_secret }
+    }
+}
+```
+
+### Handler Route Macros and Scopes
+
+```rust
+// Good: use actix-web route macros
+#[post("/auth/register")]
+async fn register(
+    service: web::Data<AuthService>,
+    payload: web::Json<RegisterRequest>,
+) -> Result<impl Responder, AppError> {
+    let response = service.register(payload.into_inner()).await?;
+    Ok(HttpResponse::Created().json(response))
+}
+
+// Handler module returns a scope
+pub fn public_routes() -> Scope {
+    web::scope("")
+        .service(health)
+        .service(register)
+        .service(login)
+}
+
+// In main.rs: nest scopes under /api
+HttpServer::new(move || {
+    App::new()
+        .app_data(web::Data::new(auth_service.clone()))
+        .service(web::scope("/api").service(public_routes()))
+})
+```
+
+### Use #[instrument] for Tracing
+
+```rust
+use tracing::instrument;
+
+#[instrument(skip(self, password))]
+pub async fn login(&self, email: &str, password: &str) -> Result<String, AppError> {
+    // Function calls are automatically traced
+}
+```
+
+---
+
 ## What NOT To Do
 
 | Don't | Do Instead |
@@ -249,8 +357,7 @@ fn test_post_new_fails_with_empty_title() { }
 | Over-abstracting | Abstractions only when needed twice |
 | `clone()` everywhere | Borrow when possible |
 | Panics in libraries | Return `Result` |
-
-**Exception:** `panic!`/`expect()` allowed at startup for config/DB init (fail-fast principle).
+| Panic in config/DB functions | Return `Result`, panic only in `main()` |
 
 ---
 

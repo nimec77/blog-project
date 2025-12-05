@@ -18,8 +18,29 @@ pub enum AppError {
     #[error("Forbidden")]
     Forbidden,
 
+    #[error("Username already exists")]
+    UsernameExists,
+
+    #[error("Email already exists")]
+    EmailExists,
+
+    #[error("Validation error: {0}")]
+    Validation(String),
+
+    #[error("Configuration error: {0}")]
+    Config(String),
+
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
+
+    #[error("JWT error: {0}")]
+    Jwt(#[from] jsonwebtoken::errors::Error),
+
+    #[error("Password hashing error")]
+    PasswordHash,
+
+    #[error("Internal error: {0}")]
+    Internal(String),
 }
 
 impl ResponseError for AppError {
@@ -34,7 +55,14 @@ impl ResponseError for AppError {
             AppError::Forbidden => {
                 HttpResponse::Forbidden().json(serde_json::json!({"error": self.to_string()}))
             }
-            AppError::Database(_) => HttpResponse::InternalServerError()
+            AppError::UsernameExists | AppError::EmailExists | AppError::Validation(_) => {
+                HttpResponse::BadRequest().json(serde_json::json!({"error": self.to_string()}))
+            }
+            AppError::Config(_)
+            | AppError::Database(_)
+            | AppError::Jwt(_)
+            | AppError::PasswordHash
+            | AppError::Internal(_) => HttpResponse::InternalServerError()
                 .json(serde_json::json!({"error": "Internal server error"})),
         }
     }

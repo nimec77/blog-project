@@ -35,14 +35,14 @@ actix-web = "4"
 actix-rt = "2"
 
 # Database
-sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono"] }
 
 # gRPC
 tonic = "0.14.2"
 prost = "0.14.1"
 
 # Auth
-jsonwebtoken = "10.2.0"
+jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
 argon2 = "0.5"
 
 # HTTP client

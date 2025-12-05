@@ -15,3 +15,5 @@ dotenvy.workspace = true
 sqlx.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
+jsonwebtoken.workspace = true
+argon2.workspace = true
