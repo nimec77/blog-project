@@ -11,6 +11,7 @@
         "Leptos",
         "overengineering",
         "parseable",
-        "prost"
+        "prost",
+        "testuser"
     ]
 }

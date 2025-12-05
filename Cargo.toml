@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "blog-shared",
     "blog-server",
@@ -10,7 +10,7 @@ members = [
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [workspace.dependencies]
 # Async runtime
@@ -38,11 +38,11 @@ actix-rt = "2"
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 
 # gRPC
-tonic = "0.12"
-prost = "0.13"
+tonic = "0.14.2"
+prost = "0.14.1"
 
 # Auth
-jsonwebtoken = "9"
+jsonwebtoken = "10.2.0"
 argon2 = "0.5"
 
 # HTTP client

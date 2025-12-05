@@ -5,7 +5,7 @@
 | Phase | Status | Progress | Notes |
 |-------|--------|----------|-------|
 | 1. Workspace Setup | ✅ Complete | 8/8 | All crates created |
-| 2. Shared Types | ⬜ Not Started | 0/3 | — |
+| 2. Shared Types | ✅ Complete | 3/3 | DTOs with tests |
 | 3. Server Core | ⬜ Not Started | 0/6 | — |
 | 4. Auth API | ⬜ Not Started | 0/4 | — |
 | 5. Posts API | ⬜ Not Started | 0/5 | — |
@@ -40,11 +40,11 @@
 
 **Goal:** Common DTOs available for all crates.
 
-- [ ] 2.1 Define `UserDto`, `PostDto`, `AuthResponse`
-- [ ] 2.2 Define request types (`RegisterRequest`, `LoginRequest`, etc.)
-- [ ] 2.3 Add serde derives
+- [x] 2.1 Define `UserDto`, `PostDto`, `AuthResponse`
+- [x] 2.2 Define request types (`RegisterRequest`, `LoginRequest`, etc.)
+- [x] 2.3 Add serde derives
 
-**✓ Test:** `cargo test -p blog-shared`
+**✓ Test:** `cargo test -p blog-shared` ✅
 
 ---
 
