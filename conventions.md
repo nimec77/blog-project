@@ -37,6 +37,26 @@ use crate::application::AuthService;
 | Constants | SCREAMING_SNAKE | `DEFAULT_LIMIT`, `MAX_TITLE_LEN` |
 | Modules | snake_case | `http_handlers`, `grpc_service` |
 
+### Module System
+
+Use the **new module style** (Rust 2018+): `module.rs` instead of `module/mod.rs`.
+
+```
+# Good (new style)
+src/
+├── domain.rs          # declares submodules
+└── domain/
+    ├── user.rs
+    └── post.rs
+
+# Bad (old style) — DO NOT USE
+src/
+└── domain/
+    ├── mod.rs         # ❌ avoid
+    ├── user.rs
+    └── post.rs
+```
+
 ### Function Signatures
 
 ```rust
@@ -221,7 +241,7 @@ fn test_post_new_fails_with_empty_title() { }
 
 | Don't | Do Instead |
 |-------|------------|
-| `unwrap()` in production code | `?` or explicit error handling |
+| `unwrap()`/`expect()` in runtime code | `?` or explicit error handling |
 | `println!` for logging | `tracing::info!`, `tracing::error!` |
 | Nested `if-else` chains | Early returns with `?` |
 | Magic numbers | Named constants |
@@ -229,6 +249,8 @@ fn test_post_new_fails_with_empty_title() { }
 | Over-abstracting | Abstractions only when needed twice |
 | `clone()` everywhere | Borrow when possible |
 | Panics in libraries | Return `Result` |
+
+**Exception:** `panic!`/`expect()` allowed at startup for config/DB init (fail-fast principle).
 
 ---
 
@@ -261,7 +283,7 @@ Examples:
 
 Before committing:
 
-- [ ] No `unwrap()` in production code
+- [ ] No `unwrap()`/`expect()` in runtime code (startup init is OK)
 - [ ] No `println!` (use tracing)
 - [ ] Public functions have `///` doc comments
 - [ ] Tests for happy path + one error case

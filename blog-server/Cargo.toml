@@ -12,3 +12,6 @@ serde_json.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 dotenvy.workspace = true
+sqlx.workspace = true
+chrono.workspace = true
+thiserror.workspace = true

@@ -4,7 +4,12 @@
 
 # Environment
 .env
+
+# SQLite
 *.db
+*.db-journal
+*.db-shm
+*.db-wal
 
 # IDE
 .idea/

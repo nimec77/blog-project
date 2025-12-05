@@ -6,7 +6,7 @@
 |-------|--------|----------|-------|
 | 1. Workspace Setup | ✅ Complete | 8/8 | All crates created |
 | 2. Shared Types | ✅ Complete | 3/3 | DTOs with tests |
-| 3. Server Core | ⬜ Not Started | 0/6 | — |
+| 3. Server Core | ✅ Complete | 6/6 | Server starts, /health works |
 | 4. Auth API | ⬜ Not Started | 0/4 | — |
 | 5. Posts API | ⬜ Not Started | 0/5 | — |
 | 6. gRPC API | ⬜ Not Started | 0/4 | — |
@@ -52,14 +52,14 @@
 
 **Goal:** Server starts, DB ready, no endpoints yet.
 
-- [ ] 3.1 Create `infrastructure/config.rs` (env loading)
-- [ ] 3.2 Create `infrastructure/database.rs` (SQLite pool)
-- [ ] 3.3 Create migrations (`users`, `posts` tables)
-- [ ] 3.4 Create domain entities (`User`, `Post`)
-- [ ] 3.5 Create `domain/error.rs` (`AppError`)
-- [ ] 3.6 Setup `main.rs` with actix-web server (empty routes)
+- [x] 3.1 Create `infrastructure/config.rs` (env loading)
+- [x] 3.2 Create `infrastructure/database.rs` (SQLite pool)
+- [x] 3.3 Create migrations (`users`, `posts` tables)
+- [x] 3.4 Create domain entities (`User`, `Post`)
+- [x] 3.5 Create `domain/error.rs` (`AppError`)
+- [x] 3.6 Setup `main.rs` with actix-web server (empty routes)
 
-**✓ Test:** Server starts on port 8080, `GET /health` returns 200
+**✓ Test:** Server starts on port 8080, `GET /health` returns 200 ✅
 
 ---
 

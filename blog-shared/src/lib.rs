@@ -3,6 +3,7 @@
 //! This crate contains DTOs shared between server, client, and CLI.
 
 mod auth;
+pub mod constants;
 mod post;
 mod request;
 mod user;

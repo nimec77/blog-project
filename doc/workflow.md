@@ -59,6 +59,7 @@ User responds:
 After approval:
 - Write code following [conventions.md](../conventions.md)
 - Create/modify only agreed files
+- Run `cargo fmt` to format code
 - Run `cargo build` to verify compilation
 - Run relevant tests
 
@@ -97,13 +98,7 @@ After confirmation:
    - Update progress report table
    - Change status: `⬜` → `✅`
 
-2. Commit changes:
-   ```bash
-   git add .
-   git commit -m "feat: <phase description>"
-   ```
-
-3. Announce:
+2. Announce:
    ```markdown
    ## 📝 Progress Updated
    
@@ -112,6 +107,8 @@ After confirmation:
    
    Ready to proceed?
    ```
+
+**Note:** Do NOT commit to git. User will review code and commit manually.
 
 ---
 
@@ -133,7 +130,7 @@ After confirmation:
 |------|-------------|
 | **No skipping** | Follow tasklist order strictly |
 | **No surprise code** | Always propose first |
-| **No large PRs** | One phase = one commit |
+| **No auto-commit** | User reviews and commits manually |
 | **Always test** | Verify before marking complete |
 | **Always wait** | Get confirmation before proceeding |
 
@@ -147,7 +144,7 @@ After confirmation:
 3. Wait for "Approved"
 4. Implement and test
 5. Show results, wait for "Confirmed"
-6. Update tasklist, commit
+6. Update tasklist (no git commit)
 7. Ask "Ready for next phase?"
 8. Repeat
 ```
