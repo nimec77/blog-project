@@ -49,9 +49,8 @@ impl ResponseError for AppError {
             AppError::UserNotFound | AppError::PostNotFound => {
                 HttpResponse::NotFound().json(serde_json::json!({"error": self.to_string()}))
             }
-            AppError::InvalidCredentials => {
-                HttpResponse::Unauthorized().json(serde_json::json!({"error": self.to_string()}))
-            }
+            AppError::InvalidCredentials | AppError::Jwt(_) => HttpResponse::Unauthorized()
+                .json(serde_json::json!({"error": "Invalid credentials"})),
             AppError::Forbidden => {
                 HttpResponse::Forbidden().json(serde_json::json!({"error": self.to_string()}))
             }
@@ -60,7 +59,6 @@ impl ResponseError for AppError {
             }
             AppError::Config(_)
             | AppError::Database(_)
-            | AppError::Jwt(_)
             | AppError::PasswordHash
             | AppError::Internal(_) => HttpResponse::InternalServerError()
                 .json(serde_json::json!({"error": "Internal server error"})),
