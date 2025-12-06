@@ -8,7 +8,7 @@
 | 2. Shared Types | ✅ Complete | 3/3 | DTOs with tests |
 | 3. Server Core | ✅ Complete | 6/6 | Server starts, /health works |
 | 4. Auth API | ✅ Complete | 4/4 | Register + Login work |
-| 5. Posts API | ⬜ Not Started | 0/5 | — |
+| 5. Posts API | ✅ Complete | 5/5 | Full CRUD works |
 | 6. gRPC API | ⬜ Not Started | 0/4 | — |
 | 7. Client Library | ⬜ Not Started | 0/4 | — |
 | 8. CLI | ⬜ Not Started | 0/4 | — |
@@ -92,11 +92,11 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 **Goal:** Full CRUD for posts via HTTP.
 
-- [ ] 5.1 Create `data/post_repository.rs`
-- [ ] 5.2 Create `application/blog_service.rs`
-- [ ] 5.3 Create `presentation/middleware.rs` (JWT auth)
-- [ ] 5.4 Add posts endpoints to `http_handlers.rs`
-- [ ] 5.5 Wire up routes with auth middleware
+- [x] 5.1 Create `data/post_repository.rs`
+- [x] 5.2 Create `application/blog_service.rs`
+- [x] 5.3 Create `presentation/middleware.rs` (JWT auth)
+- [x] 5.4 Add posts endpoints to `http_handlers.rs`
+- [x] 5.5 Wire up routes with auth middleware
 
 **✓ Test:**
 ```bash
@@ -121,6 +121,7 @@ curl -X PUT http://localhost:8080/api/posts/1 \
 curl -X DELETE http://localhost:8080/api/posts/1 \
   -H "Authorization: Bearer <token>"
 ```
+✅
 
 ---
 

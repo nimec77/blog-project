@@ -13,10 +13,10 @@ mod domain;
 mod infrastructure;
 mod presentation;
 
-use application::AuthService;
-use data::UserRepository;
+use application::{AuthService, BlogService};
+use data::{PostRepository, UserRepository};
 use infrastructure::{config::Config, database};
-use presentation::public_routes;
+use presentation::{JwtSecret, api_routes};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -38,17 +38,23 @@ async fn main() -> std::io::Result<()> {
 
     // Create repositories
     let user_repo = Arc::new(UserRepository::new(pool.clone()));
+    let post_repo = Arc::new(PostRepository::new(pool.clone()));
 
     // Create services
     let auth_service = AuthService::new(Arc::clone(&user_repo), config.jwt_secret.clone());
+    let blog_service = BlogService::new(Arc::clone(&post_repo));
+
+    // JWT secret for auth middleware
+    let jwt_secret = JwtSecret(config.jwt_secret.clone());
 
     info!(port = config.http_port, "Starting HTTP server");
 
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(jwt_secret.clone()))
             .app_data(web::Data::new(auth_service.clone()))
-            .service(web::scope("/api").service(public_routes()))
+            .app_data(web::Data::new(blog_service.clone()))
+            .service(web::scope("/api").service(api_routes()))
     })
     .bind(("0.0.0.0", config.http_port))?
     .run()

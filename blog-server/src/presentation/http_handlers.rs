@@ -8,19 +8,17 @@ use crate::application::{AuthService, BlogService};
 use crate::domain::AppError;
 use crate::presentation::middleware::AuthenticatedUser;
 
-/// Creates public routes scope (no authentication required).
-pub fn public_routes() -> Scope {
+/// Creates all API routes.
+pub fn api_routes() -> Scope {
     web::scope("")
+        // Health
         .service(health)
+        // Auth (public)
         .service(register)
         .service(login)
+        // Posts (mixed: list/get are public, create/update/delete require auth)
         .service(list_posts)
         .service(get_post)
-}
-
-/// Creates protected routes scope (authentication required).
-pub fn protected_routes() -> Scope {
-    web::scope("")
         .service(create_post)
         .service(update_post)
         .service(delete_post)
