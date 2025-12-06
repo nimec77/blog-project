@@ -1,10 +1,12 @@
 //! HTTP request handlers.
 
-use actix_web::{HttpResponse, Responder, Scope, get, post, web};
-use blog_shared::{LoginRequest, RegisterRequest};
+use actix_web::{HttpResponse, Responder, Scope, delete, get, post, put, web};
+use blog_shared::{CreatePostRequest, LoginRequest, RegisterRequest, UpdatePostRequest};
+use serde::Deserialize;
 
-use crate::application::AuthService;
+use crate::application::{AuthService, BlogService};
 use crate::domain::AppError;
+use crate::presentation::middleware::AuthenticatedUser;
 
 /// Creates public routes scope (no authentication required).
 pub fn public_routes() -> Scope {
@@ -12,6 +14,16 @@ pub fn public_routes() -> Scope {
         .service(health)
         .service(register)
         .service(login)
+        .service(list_posts)
+        .service(get_post)
+}
+
+/// Creates protected routes scope (authentication required).
+pub fn protected_routes() -> Scope {
+    web::scope("")
+        .service(create_post)
+        .service(update_post)
+        .service(delete_post)
 }
 
 /// Health check endpoint.
@@ -38,4 +50,77 @@ async fn login(
 ) -> Result<impl Responder, AppError> {
     let response = service.login(payload.into_inner()).await?;
     Ok(HttpResponse::Ok().json(response))
+}
+
+/// Query parameters for listing posts.
+#[derive(Debug, Deserialize)]
+pub struct ListPostsQuery {
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+const DEFAULT_LIMIT: i64 = 10;
+const DEFAULT_OFFSET: i64 = 0;
+
+/// Lists posts with pagination (public).
+#[get("/posts")]
+async fn list_posts(
+    service: web::Data<BlogService>,
+    query: web::Query<ListPostsQuery>,
+) -> Result<impl Responder, AppError> {
+    let limit = query.limit.unwrap_or(DEFAULT_LIMIT);
+    let offset = query.offset.unwrap_or(DEFAULT_OFFSET);
+    let response = service.list_posts(limit, offset).await?;
+    Ok(HttpResponse::Ok().json(response))
+}
+
+/// Gets a single post by ID (public).
+#[get("/posts/{id}")]
+async fn get_post(
+    service: web::Data<BlogService>,
+    path: web::Path<i64>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    let post = service.get_post(id).await?;
+    Ok(HttpResponse::Ok().json(post))
+}
+
+/// Creates a new post (requires authentication).
+#[post("/posts")]
+async fn create_post(
+    auth: AuthenticatedUser,
+    service: web::Data<BlogService>,
+    payload: web::Json<CreatePostRequest>,
+) -> Result<impl Responder, AppError> {
+    let post = service
+        .create_post(auth.user_id, payload.into_inner())
+        .await?;
+    Ok(HttpResponse::Created().json(post))
+}
+
+/// Updates a post (author only).
+#[put("/posts/{id}")]
+async fn update_post(
+    auth: AuthenticatedUser,
+    service: web::Data<BlogService>,
+    path: web::Path<i64>,
+    payload: web::Json<UpdatePostRequest>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    let post = service
+        .update_post(id, auth.user_id, payload.into_inner())
+        .await?;
+    Ok(HttpResponse::Ok().json(post))
+}
+
+/// Deletes a post (author only).
+#[delete("/posts/{id}")]
+async fn delete_post(
+    auth: AuthenticatedUser,
+    service: web::Data<BlogService>,
+    path: web::Path<i64>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    service.delete_post(id, auth.user_id).await?;
+    Ok(HttpResponse::NoContent().finish())
 }
