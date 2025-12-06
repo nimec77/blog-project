@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use actix_web::{App, HttpServer, web};
 use tonic::transport::Server as GrpcServer;
+use tonic_reflection::server::Builder as ReflectionBuilder;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
@@ -22,6 +23,9 @@ use presentation::grpc_service::proto::auth_service_server::AuthServiceServer;
 use presentation::grpc_service::proto::blog_service_server::BlogServiceServer;
 use presentation::grpc_service::{GrpcAuthService, GrpcBlogService};
 use presentation::{JwtSecret, api_routes};
+
+/// File descriptor set for gRPC reflection.
+const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("blog_descriptor");
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -65,10 +69,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Starting servers"
     );
 
+    // Create reflection service for gRPC
+    let reflection_service = ReflectionBuilder::configure()
+        .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
+        .build_v1()?;
+
     // Start gRPC server in background
     let grpc_server = GrpcServer::builder()
         .add_service(AuthServiceServer::new(grpc_auth_service))
         .add_service(BlogServiceServer::new(grpc_blog_service))
+        .add_service(reflection_service)
         .serve(grpc_addr);
 
     // Start HTTP server

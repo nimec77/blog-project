@@ -9,7 +9,7 @@
 | 3. Server Core | ✅ Complete | 6/6 | Server starts, /health works |
 | 4. Auth API | ✅ Complete | 4/4 | Register + Login work |
 | 5. Posts API | ✅ Complete | 5/5 | Full CRUD works |
-| 6. gRPC API | ✅ Complete | 4/4 | HTTP + gRPC parallel |
+| 6. gRPC API | ✅ Complete | 5/5 | HTTP + gRPC parallel + reflection |
 | 7. Client Library | ⬜ Not Started | 0/4 | — |
 | 8. CLI | ⬜ Not Started | 0/4 | — |
 | 9. WASM Frontend | ⬜ Not Started | 0/5 | — |
@@ -133,10 +133,18 @@ curl -X DELETE http://localhost:8080/api/posts/1 \
 - [x] 6.2 Configure `build.rs`
 - [x] 6.3 Create `presentation/grpc_service.rs`
 - [x] 6.4 Add gRPC server to `main.rs` (parallel with HTTP)
+- [x] 6.5 Add gRPC server reflection (`tonic-reflection`)
 
 **✓ Test:** Use `grpcurl` or blog-cli with `--grpc` flag
 ```bash
-grpcurl -plaintext -import-path blog-server/proto -proto blog.proto \
+# With reflection (no proto file needed)
+grpcurl -plaintext localhost:50051 list
+# Returns: blog.AuthService, blog.BlogService, grpc.reflection.v1.ServerReflection
+
+grpcurl -plaintext localhost:50051 describe blog.AuthService
+# Returns service definition
+
+grpcurl -plaintext \
   -d '{"username":"grpcuser","email":"grpc@test.com","password":"secret123"}' \
   localhost:50051 blog.AuthService/Register
 # Returns: {"token":"...", "user":{...}}
