@@ -17,3 +17,8 @@ chrono.workspace = true
 thiserror.workspace = true
 jsonwebtoken.workspace = true
 argon2.workspace = true
+tonic.workspace = true
+prost.workspace = true
+
+[build-dependencies]
+tonic-prost-build = "0.14.2"
