@@ -1,8 +1,10 @@
 //! Blog server entry point.
 
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use actix_web::{App, HttpServer, web};
+use tonic::transport::Server as GrpcServer;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
@@ -16,10 +18,13 @@ mod presentation;
 use application::{AuthService, BlogService};
 use data::{PostRepository, UserRepository};
 use infrastructure::{config::Config, database};
+use presentation::grpc_service::proto::auth_service_server::AuthServiceServer;
+use presentation::grpc_service::proto::blog_service_server::BlogServiceServer;
+use presentation::grpc_service::{GrpcAuthService, GrpcBlogService};
 use presentation::{JwtSecret, api_routes};
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logging
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
@@ -47,9 +52,27 @@ async fn main() -> std::io::Result<()> {
     // JWT secret for auth middleware
     let jwt_secret = JwtSecret(config.jwt_secret.clone());
 
-    info!(port = config.http_port, "Starting HTTP server");
+    // Clone services for gRPC
+    let grpc_auth_service = GrpcAuthService::new(auth_service.clone());
+    let grpc_blog_service = GrpcBlogService::new(blog_service.clone(), config.jwt_secret.clone());
 
-    HttpServer::new(move || {
+    // gRPC server address
+    let grpc_addr: SocketAddr = format!("0.0.0.0:{}", config.grpc_port).parse()?;
+
+    info!(
+        http_port = config.http_port,
+        grpc_port = config.grpc_port,
+        "Starting servers"
+    );
+
+    // Start gRPC server in background
+    let grpc_server = GrpcServer::builder()
+        .add_service(AuthServiceServer::new(grpc_auth_service))
+        .add_service(BlogServiceServer::new(grpc_blog_service))
+        .serve(grpc_addr);
+
+    // Start HTTP server
+    let http_server = HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(jwt_secret.clone()))
             .app_data(web::Data::new(auth_service.clone()))
@@ -57,6 +80,17 @@ async fn main() -> std::io::Result<()> {
             .service(web::scope("/api").service(api_routes()))
     })
     .bind(("0.0.0.0", config.http_port))?
-    .run()
-    .await
+    .run();
+
+    // Run both servers concurrently
+    tokio::select! {
+        result = http_server => {
+            result?;
+        }
+        result = grpc_server => {
+            result?;
+        }
+    }
+
+    Ok(())
 }

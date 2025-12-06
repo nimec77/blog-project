@@ -154,8 +154,16 @@ impl GrpcBlogServiceTrait for GrpcBlogService {
         request: Request<proto::ListPostsRequest>,
     ) -> Result<Response<proto::ListPostsResponse>, Status> {
         let req = request.into_inner();
-        let limit = if req.limit > 0 { req.limit } else { DEFAULT_LIMIT };
-        let offset = if req.offset >= 0 { req.offset } else { DEFAULT_OFFSET };
+        let limit = if req.limit > 0 {
+            req.limit
+        } else {
+            DEFAULT_LIMIT
+        };
+        let offset = if req.offset >= 0 {
+            req.offset
+        } else {
+            DEFAULT_OFFSET
+        };
 
         let result = self
             .blog_service
