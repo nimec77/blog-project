@@ -1,5 +1,6 @@
 //! Presentation layer: HTTP handlers and routes.
 
+pub mod grpc_service;
 mod http_handlers;
 mod middleware;
 
