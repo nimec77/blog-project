@@ -5,6 +5,7 @@ use blog_shared::{CreatePostRequest, LoginRequest, RegisterRequest, UpdatePostRe
 use serde::Deserialize;
 
 use crate::application::{AuthService, BlogService};
+use crate::constants::{DEFAULT_LIMIT, DEFAULT_OFFSET};
 use crate::domain::AppError;
 use crate::presentation::middleware::AuthenticatedUser;
 
@@ -56,9 +57,6 @@ pub struct ListPostsQuery {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
 }
-
-const DEFAULT_LIMIT: i64 = 10;
-const DEFAULT_OFFSET: i64 = 0;
 
 /// Lists posts with pagination (public).
 #[get("/posts")]

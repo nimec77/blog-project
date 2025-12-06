@@ -37,6 +37,15 @@ use crate::application::AuthService;
 | Constants | SCREAMING_SNAKE | `DEFAULT_LIMIT`, `MAX_TITLE_LEN` |
 | Modules | snake_case | `http_handlers`, `grpc_service` |
 
+### Constants Location
+
+All constants must be placed in dedicated `constants.rs` files:
+
+- **Shared constants** (used across crates): `blog-shared/src/constants.rs`
+- **Crate-specific constants**: `<crate>/src/constants.rs`
+
+Never define constants inline in other modules.
+
 ### Module System
 
 Use the **new module style** (Rust 2018+): `module.rs` instead of `module/mod.rs`.
