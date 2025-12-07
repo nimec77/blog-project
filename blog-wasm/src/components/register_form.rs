@@ -144,9 +144,9 @@ pub fn register_form(props: &RegisterFormProps) -> Html {
                 </button>
             </form>
 
-            <p style="margin-top: 1rem; text-align: center; color: var(--color-text-muted);">
+            <p class="auth-switch">
                 {"Already have an account? "}
-                <a href="/login">{"Login"}</a>
+                <a href="/login" class="auth-link">{"Login"}</a>
             </p>
         </div>
     }

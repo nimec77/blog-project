@@ -1,18 +1,41 @@
-/* Blog Platform Styles */
+/* Blog Platform - Rust Theme 🦀 */
 
 :root {
-    --color-bg: #0f0f0f;
-    --color-surface: #1a1a1a;
-    --color-surface-hover: #252525;
-    --color-border: #333;
-    --color-text: #e0e0e0;
-    --color-text-muted: #888;
-    --color-primary: #ff6b35;
-    --color-primary-hover: #ff8555;
-    --color-success: #4ade80;
-    --color-error: #f87171;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-    --font-sans: 'Inter', system-ui, sans-serif;
+    /* Rust-inspired color palette */
+    --rust-orange: #CE422B;
+    --rust-orange-light: #E57C4A;
+    --rust-orange-dark: #a83525;
+    --rust-orange-glow: rgba(206, 66, 43, 0.4);
+    
+    /* Ferrous backgrounds (warm dark tones) */
+    --ferrous-dark: #1a1614;
+    --ferrous-surface: #2d2825;
+    --ferrous-surface-hover: #3d3632;
+    --ferrous-elevated: #352f2c;
+    
+    /* Iron borders and accents */
+    --iron-border: #4a423d;
+    --iron-border-light: #5a524d;
+    
+    /* Oxidized text colors (warm whites) */
+    --oxidized-text: #f0e6e0;
+    --oxidized-muted: #9a8f87;
+    --oxidized-subtle: #6d625a;
+    
+    /* Forge status colors */
+    --forge-success: #5cb85c;
+    --forge-success-bg: rgba(92, 184, 92, 0.1);
+    --forge-error: #d9534f;
+    --forge-error-bg: rgba(217, 83, 79, 0.1);
+    
+    /* Typography */
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    
+    /* Spacing */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
 }
 
 * {
@@ -23,88 +46,195 @@
 
 body {
     font-family: var(--font-sans);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--ferrous-dark);
+    color: var(--oxidized-text);
     min-height: 100vh;
     line-height: 1.6;
 }
 
+/* App container */
 .app {
     max-width: 900px;
     margin: 0 auto;
     padding: 2rem;
 }
 
-/* Header */
+/* ═══════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════ */
+
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 2px solid var(--iron-border);
     margin-bottom: 2rem;
 }
 
 .header h1 {
     font-family: var(--font-mono);
     font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--color-primary);
+    font-weight: 700;
+    color: var(--rust-orange);
+    letter-spacing: -0.5px;
+}
+
+.header h1::before {
+    content: "🦀 ";
 }
 
 .header nav {
     display: flex;
+    align-items: center;
     gap: 1.5rem;
 }
 
 .header nav a {
-    color: var(--color-text-muted);
+    color: var(--oxidized-muted);
     text-decoration: none;
     font-size: 0.9rem;
-    transition: color 0.2s;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    padding: 0.5rem 0;
+    position: relative;
 }
 
 .header nav a:hover {
-    color: var(--color-primary);
+    color: var(--rust-orange-light);
 }
 
-/* Main content */
+.header nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--rust-orange);
+    transition: width 0.2s ease;
+}
+
+.header nav a:hover::after {
+    width: 100%;
+}
+
+/* Override for button-styled links in nav */
+.header nav a.btn {
+    padding: 0.6rem 1.2rem;
+}
+
+.header nav a.btn::after {
+    display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════════════════════════════ */
+
 .main {
     min-height: 60vh;
 }
 
-/* Buttons */
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: var(--font-sans);
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
+/* Primary button - THE RUST ORANGE */
 .btn-primary {
-    background: var(--color-primary);
+    background: linear-gradient(135deg, var(--rust-orange) 0%, var(--rust-orange-dark) 100%);
     color: white;
+    border: 1px solid var(--rust-orange-light);
+    box-shadow: 
+        0 2px 8px var(--rust-orange-glow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .btn-primary:hover {
-    background: var(--color-primary-hover);
+    background: linear-gradient(135deg, var(--rust-orange-light) 0%, var(--rust-orange) 100%);
+    box-shadow: 
+        0 4px 20px var(--rust-orange-glow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
 }
 
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px var(--rust-orange-glow);
+}
+
+/* Secondary button */
 .btn-secondary {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
+    background: var(--ferrous-surface);
+    color: var(--oxidized-text);
+    border: 1px solid var(--iron-border);
 }
 
 .btn-secondary:hover {
-    background: var(--color-surface-hover);
+    background: var(--ferrous-surface-hover);
+    border-color: var(--iron-border-light);
 }
 
-/* Forms */
+/* Danger button */
+.btn-danger {
+    background: var(--forge-error);
+    color: white;
+    border: 1px solid #c9302c;
+}
+
+.btn-danger:hover {
+    background: #c9302c;
+    box-shadow: 0 2px 8px rgba(217, 83, 79, 0.4);
+}
+
+/* Link button */
+.btn-link {
+    background: transparent;
+    color: var(--rust-orange);
+    padding: 0;
+    border: none;
+    font-weight: 500;
+}
+
+.btn-link:hover {
+    color: var(--rust-orange-light);
+    text-decoration: underline;
+}
+
+/* Small button */
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+/* Disabled button */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORMS
+   ═══════════════════════════════════════════════════════════════ */
+
 .form-group {
     margin-bottom: 1.25rem;
 }
@@ -113,182 +243,136 @@ body {
     display: block;
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
-    color: var(--color-text-muted);
+    font-weight: 500;
+    color: var(--oxidized-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1rem;
     font-size: 1rem;
     font-family: inherit;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    color: var(--color-text);
-    transition: border-color 0.2s;
+    background: var(--ferrous-surface);
+    border: 1px solid var(--iron-border);
+    border-radius: var(--radius-md);
+    color: var(--oxidized-text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--oxidized-subtle);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: var(--rust-orange);
+    box-shadow: 0 0 0 3px var(--rust-orange-glow);
 }
 
 .form-group textarea {
     min-height: 150px;
     resize: vertical;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.7;
 }
 
-/* Cards */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════════════════════════ */
+
 .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+    background: var(--ferrous-surface);
+    border: 1px solid var(--iron-border);
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
     margin-bottom: 1rem;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-    border-color: var(--color-primary);
+    border-color: var(--rust-orange);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .card-title {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: var(--color-text);
+    color: var(--oxidized-text);
 }
 
 .card-meta {
     font-size: 0.85rem;
-    color: var(--color-text-muted);
+    color: var(--oxidized-muted);
     margin-bottom: 1rem;
 }
 
 .card-content {
-    color: var(--color-text);
+    color: var(--oxidized-text);
     line-height: 1.7;
 }
 
-/* Post list */
+/* ═══════════════════════════════════════════════════════════════
+   POST LIST & GRID
+   ═══════════════════════════════════════════════════════════════ */
+
 .post-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-/* Auth forms */
-.auth-container {
-    max-width: 400px;
-    margin: 4rem auto;
-}
-
-.auth-container h2 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-/* Messages */
-.message {
-    padding: 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-}
-
-.message-success {
-    background: rgba(74, 222, 128, 0.1);
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
-}
-
-.message-error {
-    background: rgba(248, 113, 113, 0.1);
-    border: 1px solid var(--color-error);
-    color: var(--color-error);
-}
-
-/* Loading */
-.loading {
-    text-align: center;
-    padding: 2rem;
-    color: var(--color-text-muted);
-}
-
-/* Empty state */
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--color-text-muted);
-}
-
-/* User info */
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.user-info span {
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-}
-
-.user-info button {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-}
-
-/* Button variants */
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-}
-
-.btn-danger {
-    background: var(--color-error);
-    color: white;
-}
-
-.btn-danger:hover {
-    background: #e05555;
-}
-
-.btn-link {
-    background: transparent;
-    color: var(--color-primary);
-    padding: 0;
-    text-decoration: none;
-}
-
-.btn-link:hover {
-    text-decoration: underline;
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Post cards */
 .post-grid {
     display: grid;
     gap: 1.5rem;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   POST CARD
+   ═══════════════════════════════════════════════════════════════ */
+
 .post-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+    background: var(--ferrous-surface);
+    border: 1px solid var(--iron-border);
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
-    transition: border-color 0.2s, transform 0.2s;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.post-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--rust-orange);
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .post-card:hover {
-    border-color: var(--color-primary);
+    border-color: var(--iron-border-light);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     transform: translateY(-2px);
+}
+
+.post-card:hover::before {
+    opacity: 1;
 }
 
 .post-card-header {
@@ -299,19 +383,30 @@ body {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: var(--color-text);
+    color: var(--oxidized-text);
+    line-height: 1.4;
 }
 
 .post-card-meta {
     font-size: 0.85rem;
-    color: var(--color-text-muted);
+    color: var(--oxidized-muted);
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.post-card-author::before {
+    content: "⚙ ";
+    color: var(--rust-orange);
+}
+
+.post-card-date::before {
+    content: "📅 ";
 }
 
 .post-card-content {
-    color: var(--color-text);
-    line-height: 1.7;
+    color: var(--oxidized-text);
+    line-height: 1.8;
     margin-bottom: 1rem;
 }
 
@@ -324,7 +419,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--iron-border);
 }
 
 .post-card-actions {
@@ -332,7 +427,10 @@ body {
     gap: 0.5rem;
 }
 
-/* Post form */
+/* ═══════════════════════════════════════════════════════════════
+   POST FORM
+   ═══════════════════════════════════════════════════════════════ */
+
 .post-form-container {
     max-width: 700px;
     margin: 2rem auto;
@@ -340,20 +438,179 @@ body {
 
 .post-form-container h2 {
     font-size: 1.5rem;
+    font-weight: 600;
     margin-bottom: 2rem;
+    color: var(--oxidized-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.post-form-container h2::before {
+    content: "✏️";
 }
 
 .post-form textarea {
     min-height: 300px;
 }
 
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
+/* ═══════════════════════════════════════════════════════════════
+   AUTH FORMS
+   ═══════════════════════════════════════════════════════════════ */
+
+.auth-container {
+    max-width: 400px;
+    margin: 4rem auto;
+    background: var(--ferrous-surface);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--iron-border);
 }
 
-/* Pagination */
+.auth-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--oxidized-text);
+}
+
+.auth-container h2::after {
+    content: " 🔐";
+}
+
+.auth-switch {
+    margin-top: 1.5rem;
+    text-align: center;
+    color: var(--oxidized-muted);
+    font-size: 0.9rem;
+}
+
+.auth-link {
+    color: var(--rust-orange-light);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+    color: var(--rust-orange);
+    text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MESSAGES
+   ═══════════════════════════════════════════════════════════════ */
+
+.message {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.message-success {
+    background: var(--forge-success-bg);
+    border: 1px solid var(--forge-success);
+    color: var(--forge-success);
+}
+
+.message-success::before {
+    content: "✓";
+    font-weight: bold;
+}
+
+.message-error {
+    background: var(--forge-error-bg);
+    border: 1px solid var(--forge-error);
+    color: var(--forge-error);
+}
+
+.message-error::before {
+    content: "✗";
+    font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOADING & EMPTY STATES
+   ═══════════════════════════════════════════════════════════════ */
+
+.loading {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--oxidized-muted);
+    font-size: 1rem;
+}
+
+.loading::before {
+    content: "⚙️ ";
+    animation: spin 2s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--oxidized-muted);
+    background: var(--ferrous-surface);
+    border: 2px dashed var(--iron-border);
+    border-radius: var(--radius-lg);
+}
+
+.empty-state::before {
+    content: "🦀";
+    display: block;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.empty-state a {
+    display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   USER INFO
+   ═══════════════════════════════════════════════════════════════ */
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info span {
+    color: var(--oxidized-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.user-info .username-greeting {
+    color: var(--rust-orange-light);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.user-info button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGINATION
+   ═══════════════════════════════════════════════════════════════ */
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -361,16 +618,79 @@ body {
     gap: 1rem;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--iron-border);
 }
 
 .pagination-info {
-    color: var(--color-text-muted);
+    color: var(--oxidized-muted);
     font-size: 0.9rem;
+    font-family: var(--font-mono);
 }
 
-/* Empty state enhancements */
-.empty-state a {
-    margin-top: 1rem;
-    display: inline-block;
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR (Webkit)
+   ═══════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ferrous-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--iron-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--rust-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SELECTION
+   ═══════════════════════════════════════════════════════════════ */
+
+::selection {
+    background: var(--rust-orange);
+    color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .app {
+        padding: 1rem;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .header nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .post-card-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .post-card-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .auth-container {
+        margin: 2rem auto;
+        padding: 1.5rem;
+    }
 }

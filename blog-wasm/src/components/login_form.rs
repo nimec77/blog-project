@@ -120,9 +120,9 @@ pub fn login_form(props: &LoginFormProps) -> Html {
                 </button>
             </form>
 
-            <p style="margin-top: 1rem; text-align: center; color: var(--color-text-muted);">
+            <p class="auth-switch">
                 {"Don't have an account? "}
-                <a href="/register">{"Register"}</a>
+                <a href="/register" class="auth-link">{"Register"}</a>
             </p>
         </div>
     }

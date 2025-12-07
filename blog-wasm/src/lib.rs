@@ -165,12 +165,12 @@ fn app() -> Html {
                     <a href="/" onclick={on_posts_click.clone()}>{"Posts"}</a>
                     if *is_authenticated {
                         <>
-                            <a href="/posts/new" onclick={on_new_post_click} class="btn btn-primary btn-sm">
-                                {"New Post"}
+                            <a href="/posts/new" onclick={on_new_post_click} class="btn btn-secondary btn-sm">
+                                {"+ New Post"}
                             </a>
                             <div class="user-info">
                                 if let Some(ref name) = user_info.username {
-                                    <span>{format!("Hi, {}", name)}</span>
+                                    <span class="username-greeting">{format!("Hi, {}", name)}</span>
                                 }
                                 <button class="btn btn-secondary" onclick={
                                     let on_logout = on_logout.clone();

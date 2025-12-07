@@ -125,7 +125,7 @@ pub fn post_list(props: &PostListProps) -> Html {
                 <div class="empty-state">
                     <p>{"No posts yet."}</p>
                     if props.current_user_id.is_some() {
-                        <a href="/posts/new" class="btn btn-primary">{"Create your first post"}</a>
+                        <a href="/posts/new" class="btn btn-secondary">{"+ Create your first post"}</a>
                     }
                 </div>
             } else {
