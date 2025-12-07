@@ -8,6 +8,21 @@ A Rust-based blog platform with multiple interfaces: HTTP API (actix-web), gRPC 
 
 **Core Philosophy**: KISS (Keep It Simple, Stupid) - no abstractions until needed twice, fail fast with `?`, validate only at boundaries.
 
+### Development Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **KISS First** | Simplest solution that works. No abstractions until needed twice. |
+| **Fail Fast** | Return errors early with `?`. Validate at API boundaries only. |
+| **Single Responsibility** | One file = one purpose. Functions do one thing. |
+| **No Premature Optimization** | Make it work first. Optimize only with evidence. |
+
+**Examples of KISS in Practice**:
+- No token refresh mechanism - just re-login after 24h
+- Simple pagination - just `posts + total`, no cursor-based complexity
+- SQLite instead of PostgreSQL - no external DB server needed
+- Flat structures - minimal nesting in code organization
+
 ## Workspace Structure
 
 ```
@@ -111,6 +126,18 @@ infrastructure/  # Database, JWT, config
 ```
 
 **Key Pattern**: Services are thin coordinators. Business logic lives in domain entities. Repositories implement `Clone` (wrap SqlitePool). Services use `Arc` for shared dependencies.
+
+### Layer Responsibilities
+
+| Layer | Responsibility | Depends On |
+|-------|----------------|------------|
+| **Domain** | Entities, validation, domain errors | Nothing |
+| **Data** | Repository traits + SQLite implementations | Domain |
+| **Application** | Thin services, orchestrate repositories | Domain, Data |
+| **Infrastructure** | DB connection, JWT, config | External crates |
+| **Presentation** | HTTP/gRPC handlers, request mapping | Application |
+
+**Dependency Rule**: Layers can only depend on layers below them. Domain is at the core and has no dependencies.
 
 ### Authentication Flow
 
@@ -390,10 +417,85 @@ See `blog-server/proto/blog.proto` for full RPC definitions.
 
 ## Testing Strategy
 
-- **Unit tests**: In `#[cfg(test)]` modules within source files
-- **Integration tests**: In `tests/` directory (if present)
+### Test Levels
+
+| Level | Scope | Tools |
+|-------|-------|-------|
+| **Unit Tests** | Domain logic, services | `#[cfg(test)]` modules |
+| **Integration Tests** | API endpoints, DB operations | `tests/` folder, test database |
+| **E2E Tests** | Full workflows via CLI | CLI commands against test server |
+
+### Testing Rules
+
+- **Each public function has at least one test**
+- **Minimum coverage**: Happy path + one error case
 - Use `#[tokio::test]` for async tests
 - Test database: Use in-memory SQLite (`:memory:`) or separate test DB file
+- SQLite in-memory database for test isolation
+
+### Test Naming Convention
+
+Pattern: `test_<function>_<scenario>`
+
+```rust
+#[test]
+fn test_post_new_creates_with_current_timestamp() { }
+
+#[test]
+fn test_post_new_fails_with_empty_title() { }
+
+#[tokio::test]
+async fn test_create_post_returns_post_with_id() { }
+```
+
+### Test File Location
+
+```rust
+// Unit tests: same file
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_post_new() {
+        let post = Post::new(1, "Title".into(), "Content".into());
+        assert_eq!(post.title, "Title");
+    }
+}
+
+// Integration tests: tests/ folder
+// tests/api_tests.rs
+```
+
+## What NOT To Do
+
+| Don't | Do Instead |
+|-------|------------|
+| `unwrap()`/`expect()` in runtime code | `?` or explicit error handling |
+| `println!` for logging | `tracing::info!`, `tracing::error!` |
+| Nested `if-else` chains | Early returns with `?` |
+| Magic numbers | Named constants in `constants.rs` |
+| Comments explaining *what* | Self-documenting code |
+| Over-abstracting | Abstractions only when needed twice |
+| `clone()` everywhere | Borrow when possible |
+| Panics in libraries | Return `Result` |
+| Panic in config/DB functions | Return `Result`, panic only in `main()` |
+| `mod.rs` files | New style modules (Rust 2018+) |
+
+## Commit Message Format
+
+```
+<type>: <short description>
+
+Types: feat, fix, refactor, test, docs, chore
+```
+
+**Examples**:
+- `feat: add user registration endpoint`
+- `fix: handle empty post title validation`
+- `refactor: extract JWT logic to separate module`
+- `test: add integration tests for post CRUD`
+- `docs: update API endpoint documentation`
 
 ## Troubleshooting
 
@@ -411,20 +513,157 @@ Check `JWT_SECRET` matches between server and client, and token hasn't expired (
 
 ## Project-Specific Workflow
 
-This project has a structured workflow documented in `.cursor/rules/workflow.mdc`:
+This project follows a structured workflow documented in [doc/workflow.md](doc/workflow.md):
 
-1. **PROPOSE**: Present implementation plan with file changes and code snippets
-2. **AGREE**: Wait for user approval
-3. **IMPLEMENT**: Write code, run tests, verify compilation
-4. **CONFIRM**: Show results and wait for confirmation
-5. **UPDATE**: Update `doc/tasklist.md` (do NOT auto-commit)
+### Workflow Cycle
 
-**Important**: Never auto-commit to git. User reviews and commits manually.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   1. PROPOSE  →  2. AGREE  →  3. IMPLEMENT  →  4. CONFIRM   │
+│        ▲                                            │       │
+│        │                                            ▼       │
+│        └──────────────  5. UPDATE  ◄────────────────┘       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Step-by-Step Rules
+
+#### 1. PROPOSE
+
+Before coding, present:
+
+```markdown
+## Phase X.Y: <Task Name>
+
+**Goal:** <What we're building>
+
+**Files to create/modify:**
+- `path/to/file.rs` — description
+
+**Key code snippets:**
+```rust
+// Show the main approach
+```
+
+**Test:** <How to verify it works>
+```
+
+⏳ **Wait for approval before implementing.**
+
+#### 2. AGREE
+
+User responds:
+- ✅ **"Approved"** → Proceed to implement
+- 🔄 **"Change X"** → Revise proposal
+- ❌ **"Different approach"** → Start over
+
+#### 3. IMPLEMENT
+
+After approval:
+- Write code following [conventions.md](conventions.md)
+- Create/modify only agreed files
+- Run `cargo fmt` to format code
+- Run `cargo build` to verify compilation
+- Run relevant tests
+
+#### 4. CONFIRM
+
+Present results:
+
+```markdown
+## ✅ Phase X.Y Complete
+
+**Created:**
+- `file1.rs` — description
+- `file2.rs` — description
+
+**Test result:**
+```bash
+$ <test command>
+<output>
+```
+
+**Ready for next phase?**
+```
+
+⏳ **Wait for user confirmation.**
+
+#### 5. UPDATE
+
+After confirmation:
+
+1. Update [doc/tasklist.md](doc/tasklist.md):
+   - Mark completed tasks: `- [ ]` → `- [x]`
+   - Update progress report table
+   - Change status: `⬜` → `✅`
+
+2. Announce next phase
+
+**Note:** Do NOT commit to git. User will review code and commit manually.
+
+### Status Icons
+
+| Icon | Meaning |
+|---------|---------|
+| ⬜ | Not started |
+| 🔄 | In progress |
+| ✅ | Complete |
+| ⚠️ | Blocked |
+| ❌ | Failed/Rejected |
+
+### Workflow Rules
+
+| Rule | Description |
+|------|-------------|
+| **No skipping** | Follow tasklist order strictly |
+| **No surprise code** | Always propose first |
+| **No auto-commit** | User reviews and commits manually |
+| **Always test** | Verify before marking complete |
+| **Always wait** | Get confirmation before proceeding |
+
+## Current Project Status
+
+See [doc/tasklist.md](doc/tasklist.md) for the complete development task list and current progress.
+
+### Progress Summary (as of latest update)
+
+| Phase | Status |
+|-------|--------|
+| 1. Workspace Setup | ✅ Complete (8/8) |
+| 2. Shared Types | ✅ Complete (3/3) |
+| 3. Server Core | ✅ Complete (6/6) |
+| 4. Auth API | ✅ Complete (4/4) |
+| 5. Posts API | ✅ Complete (5/5) |
+| 6. gRPC API | ✅ Complete (5/5) |
+| 7. Client Library | ✅ Complete (4/4) |
+| 8. CLI | ✅ Complete (4/4) |
+| 9. WASM Frontend | ✅ Complete (6/6) |
+| 10. Final Polish | ⬜ Not Started (0/3) |
+
+**Current Phase**: Phase 10 - Final Polish (integration tests, README, code review)
+
+**Note**: This status may be outdated. Always check [doc/tasklist.md](doc/tasklist.md) for the most current information.
 
 ## Additional Documentation
 
-- `README.md` - Quick start guide
-- `vision.md` - Complete technical vision and architecture decisions
-- `conventions.md` - Detailed code conventions and patterns
-- `.cursor/rules/` - Cursor-specific workflow rules
-- `doc/` - Project documentation and task lists
+### Core Documentation
+
+- [README.md](README.md) - Quick start guide and project setup
+- [idea.md](idea.md) - Original project idea and specifications
+- [vision.md](vision.md) - Complete technical vision and architecture decisions
+- [conventions.md](conventions.md) - Detailed code conventions and patterns
+
+### Development Guides
+
+- [doc/workflow.md](doc/workflow.md) - Development workflow (PROPOSE → AGREE → IMPLEMENT → CONFIRM → UPDATE)
+- [doc/tasklist.md](doc/tasklist.md) - Phase-by-phase task breakdown and progress tracking
+
+### Quick Reference
+
+For any development work:
+1. Check [doc/tasklist.md](doc/tasklist.md) for current phase
+2. Follow workflow in [doc/workflow.md](doc/workflow.md)
+3. Apply conventions from [conventions.md](conventions.md)
+4. Reference architecture in [vision.md](vision.md)
