@@ -11,9 +11,9 @@ use crate::api;
 /// Post form properties.
 #[derive(Properties, PartialEq)]
 pub struct PostFormProps {
-    /// Existing post to edit (None for create mode).
+    /// Post ID to edit (None for create mode).
     #[prop_or_default]
-    pub post: Option<PostDto>,
+    pub post_id: Option<i64>,
     /// Callback when form is submitted successfully.
     pub on_success: Callback<PostDto>,
     /// Callback when cancel is clicked.
@@ -24,24 +24,46 @@ pub struct PostFormProps {
 /// Post form component.
 #[function_component(PostForm)]
 pub fn post_form(props: &PostFormProps) -> Html {
-    let is_edit = props.post.is_some();
+    let post_id = props.post_id;
+    let is_edit = post_id.is_some();
 
-    let title = use_state(|| {
-        props
-            .post
-            .as_ref()
-            .map(|p| p.title.clone())
-            .unwrap_or_default()
-    });
-    let content = use_state(|| {
-        props
-            .post
-            .as_ref()
-            .map(|p| p.content.clone())
-            .unwrap_or_default()
-    });
+    let title = use_state(String::new);
+    let content = use_state(String::new);
     let error = use_state(|| None::<String>);
     let loading = use_state(|| false);
+    let fetching = use_state(|| false);
+
+    // Fetch post data when editing
+    {
+        let title = title.clone();
+        let content = content.clone();
+        let error = error.clone();
+        let fetching = fetching.clone();
+
+        use_effect_with(post_id, move |post_id| {
+            if let Some(id) = *post_id {
+                let title = title.clone();
+                let content = content.clone();
+                let error = error.clone();
+                let fetching = fetching.clone();
+
+                fetching.set(true);
+                spawn_local(async move {
+                    match api::get_post(id).await {
+                        Ok(post) => {
+                            title.set(post.title);
+                            content.set(post.content);
+                        }
+                        Err(e) => {
+                            error.set(Some(format!("Failed to load post: {}", e.message)));
+                        }
+                    }
+                    fetching.set(false);
+                });
+            }
+            || ()
+        });
+    }
 
     let on_title_change = {
         let title = title.clone();
@@ -65,7 +87,6 @@ pub fn post_form(props: &PostFormProps) -> Html {
         let error = error.clone();
         let loading = loading.clone();
         let on_success = props.on_success.clone();
-        let post_id = props.post.as_ref().map(|p| p.id);
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
@@ -132,6 +153,8 @@ pub fn post_form(props: &PostFormProps) -> Html {
         })
     };
 
+    let is_disabled = *loading || *fetching;
+
     html! {
         <div class="post-form-container">
             <h2>{if is_edit { "Edit Post" } else { "Create New Post" }}</h2>
@@ -140,55 +163,59 @@ pub fn post_form(props: &PostFormProps) -> Html {
                 <div class="message message-error">{err}</div>
             }
 
-            <form {onsubmit} class="post-form">
-                <div class="form-group">
-                    <label for="title">{"Title"}</label>
-                    <input
-                        type="text"
-                        id="title"
-                        value={(*title).clone()}
-                        oninput={on_title_change}
-                        disabled={*loading}
-                        placeholder="Enter post title..."
-                        required=true
-                    />
-                </div>
+            if *fetching {
+                <div class="loading">{"Loading post data..."}</div>
+            } else {
+                <form {onsubmit} class="post-form">
+                    <div class="form-group">
+                        <label for="title">{"Title"}</label>
+                        <input
+                            type="text"
+                            id="title"
+                            value={(*title).clone()}
+                            oninput={on_title_change}
+                            disabled={is_disabled}
+                            placeholder="Enter post title..."
+                            required=true
+                        />
+                    </div>
 
-                <div class="form-group">
-                    <label for="content">{"Content"}</label>
-                    <textarea
-                        id="content"
-                        value={(*content).clone()}
-                        oninput={on_content_change}
-                        disabled={*loading}
-                        placeholder="Write your post content..."
-                        rows="12"
-                        required=true
-                    />
-                </div>
+                    <div class="form-group">
+                        <label for="content">{"Content"}</label>
+                        <textarea
+                            id="content"
+                            value={(*content).clone()}
+                            oninput={on_content_change}
+                            disabled={is_disabled}
+                            placeholder="Write your post content..."
+                            rows="12"
+                            required=true
+                        />
+                    </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" disabled={*loading}>
-                        if *loading {
-                            {"Saving..."}
-                        } else if is_edit {
-                            {"Update Post"}
-                        } else {
-                            {"Create Post"}
-                        }
-                    </button>
-                    if props.on_cancel.is_some() {
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            onclick={on_cancel_click}
-                            disabled={*loading}
-                        >
-                            {"Cancel"}
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" disabled={is_disabled}>
+                            if *loading {
+                                {"Saving..."}
+                            } else if is_edit {
+                                {"Update Post"}
+                            } else {
+                                {"Create Post"}
+                            }
                         </button>
-                    }
-                </div>
-            </form>
+                        if props.on_cancel.is_some() {
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick={on_cancel_click}
+                                disabled={is_disabled}
+                            >
+                                {"Cancel"}
+                            </button>
+                        }
+                    </div>
+                </form>
+            }
         </div>
     }
 }

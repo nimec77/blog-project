@@ -34,8 +34,7 @@ struct UserInfo {
 fn app() -> Html {
     let page = use_state(|| Page::Posts);
     let user_info = use_state(UserInfo::default);
-    let is_authenticated = use_state(|| api::is_authenticated());
-    let editing_post = use_state(|| None::<PostDto>);
+    let is_authenticated = use_state(api::is_authenticated);
 
     // Check for existing token on mount and restore user session
     {
@@ -163,12 +162,10 @@ fn app() -> Html {
                 on_cancel={Some(on_post_cancel.clone())}
             />
         },
-        Page::EditPost(_post_id) => {
-            // For edit, we need to fetch the post first
-            // For now, show a placeholder - we'll implement proper routing later
+        Page::EditPost(post_id) => {
             html! {
                 <PostForm
-                    post={(*editing_post).clone()}
+                    post_id={Some(post_id)}
                     on_success={on_post_created.clone()}
                     on_cancel={Some(on_post_cancel.clone())}
                 />
