@@ -30,3 +30,6 @@ Thumbs.db
 
 # Cargo lock for libraries (keep for workspace)
 # Cargo.lock is kept for reproducible builds
+
+# Frontend build
+blog-wasm/dist/
