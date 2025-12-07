@@ -4,6 +4,8 @@ use yew::prelude::*;
 
 use blog_shared::PostDto;
 
+use crate::constants::MAX_CONTENT_LENGTH;
+
 /// Post card properties.
 #[derive(Properties, PartialEq)]
 pub struct PostCardProps {
@@ -24,6 +26,7 @@ pub struct PostCardProps {
 #[function_component(PostCard)]
 pub fn post_card(props: &PostCardProps) -> Html {
     let post = &props.post;
+    let expanded = use_state(|| false);
 
     let on_edit_click = {
         let post_id = post.id;
@@ -45,7 +48,21 @@ pub fn post_card(props: &PostCardProps) -> Html {
         })
     };
 
+    let on_toggle_expand = {
+        let expanded = expanded.clone();
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            expanded.set(!*expanded);
+        })
+    };
+
     let formatted_date = post.created_at.format("%B %d, %Y").to_string();
+    let needs_truncation = post.content.len() > MAX_CONTENT_LENGTH;
+    let display_content = if *expanded || !needs_truncation {
+        post.content.clone()
+    } else {
+        truncate_content(&post.content, MAX_CONTENT_LENGTH)
+    };
 
     html! {
         <article class="post-card">
@@ -57,10 +74,14 @@ pub fn post_card(props: &PostCardProps) -> Html {
                 </div>
             </header>
             <div class="post-card-content">
-                <p>{truncate_content(&post.content, 200)}</p>
+                <p>{display_content}</p>
             </div>
             <footer class="post-card-footer">
-                <a href={format!("/posts/{}", post.id)} class="btn btn-link">{"Read more"}</a>
+                if needs_truncation {
+                    <a href="#" class="btn btn-link" onclick={on_toggle_expand}>
+                        {if *expanded { "Show less" } else { "Read more" }}
+                    </a>
+                }
                 if props.is_owner {
                     <div class="post-card-actions">
                         <button class="btn btn-secondary btn-sm" onclick={on_edit_click}>
