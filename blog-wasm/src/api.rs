@@ -2,13 +2,25 @@
 
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
+use web_sys::window;
 
 use blog_shared::{
     AuthResponse, CreatePostRequest, LoginRequest, PostDto, PostListResponse, RegisterRequest,
     UpdatePostRequest,
 };
 
-use crate::constants::{API_BASE_URL, TOKEN_STORAGE_KEY};
+use crate::constants::{API_PORT, TOKEN_STORAGE_KEY};
+
+/// Gets the API base URL dynamically based on current page hostname.
+/// This ensures CORS works correctly regardless of whether the page is accessed
+/// via localhost or 127.0.0.1.
+fn get_api_base_url() -> String {
+    let hostname = window()
+        .and_then(|w| w.location().hostname().ok())
+        .unwrap_or_else(|| "127.0.0.1".to_string());
+
+    format!("http://{}:{}", hostname, API_PORT)
+}
 
 /// API client error.
 #[derive(Debug, Clone)]
@@ -44,7 +56,7 @@ pub fn is_authenticated() -> bool {
 
 /// Registers a new user.
 pub async fn register(req: RegisterRequest) -> Result<AuthResponse, ApiError> {
-    let url = format!("{}/api/auth/register", API_BASE_URL);
+    let url = format!("{}/api/auth/register", get_api_base_url());
     let response = Request::post(&url)
         .json(&req)
         .map_err(|e| ApiError {
@@ -61,7 +73,7 @@ pub async fn register(req: RegisterRequest) -> Result<AuthResponse, ApiError> {
 
 /// Logs in an existing user.
 pub async fn login(req: LoginRequest) -> Result<AuthResponse, ApiError> {
-    let url = format!("{}/api/auth/login", API_BASE_URL);
+    let url = format!("{}/api/auth/login", get_api_base_url());
     let response = Request::post(&url)
         .json(&req)
         .map_err(|e| ApiError {
@@ -78,7 +90,7 @@ pub async fn login(req: LoginRequest) -> Result<AuthResponse, ApiError> {
 
 /// Creates a new post.
 pub async fn create_post(req: CreatePostRequest) -> Result<PostDto, ApiError> {
-    let url = format!("{}/api/posts", API_BASE_URL);
+    let url = format!("{}/api/posts", get_api_base_url());
     let token = get_token().ok_or(ApiError {
         message: "Not authenticated".into(),
     })?;
@@ -100,7 +112,7 @@ pub async fn create_post(req: CreatePostRequest) -> Result<PostDto, ApiError> {
 
 /// Gets a post by ID.
 pub async fn get_post(id: i64) -> Result<PostDto, ApiError> {
-    let url = format!("{}/api/posts/{}", API_BASE_URL, id);
+    let url = format!("{}/api/posts/{}", get_api_base_url(), id);
     let response = Request::get(&url).send().await.map_err(|e| ApiError {
         message: e.to_string(),
     })?;
@@ -112,7 +124,9 @@ pub async fn get_post(id: i64) -> Result<PostDto, ApiError> {
 pub async fn list_posts(limit: i64, offset: i64) -> Result<PostListResponse, ApiError> {
     let url = format!(
         "{}/api/posts?limit={}&offset={}",
-        API_BASE_URL, limit, offset
+        get_api_base_url(),
+        limit,
+        offset
     );
     let response = Request::get(&url).send().await.map_err(|e| ApiError {
         message: e.to_string(),
@@ -123,7 +137,7 @@ pub async fn list_posts(limit: i64, offset: i64) -> Result<PostListResponse, Api
 
 /// Updates a post.
 pub async fn update_post(id: i64, req: UpdatePostRequest) -> Result<PostDto, ApiError> {
-    let url = format!("{}/api/posts/{}", API_BASE_URL, id);
+    let url = format!("{}/api/posts/{}", get_api_base_url(), id);
     let token = get_token().ok_or(ApiError {
         message: "Not authenticated".into(),
     })?;
@@ -145,7 +159,7 @@ pub async fn update_post(id: i64, req: UpdatePostRequest) -> Result<PostDto, Api
 
 /// Deletes a post.
 pub async fn delete_post(id: i64) -> Result<(), ApiError> {
-    let url = format!("{}/api/posts/{}", API_BASE_URL, id);
+    let url = format!("{}/api/posts/{}", get_api_base_url(), id);
     let token = get_token().ok_or(ApiError {
         message: "Not authenticated".into(),
     })?;

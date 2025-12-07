@@ -12,5 +12,10 @@ pub const DEFAULT_LIMIT: i64 = 10;
 /// Default pagination offset for list endpoints.
 pub const DEFAULT_OFFSET: i64 = 0;
 
-/// Allowed CORS origin for WASM frontend.
-pub const CORS_ALLOWED_ORIGIN: &str = "http://127.0.0.1:8081";
+/// Allowed CORS origins for WASM frontend.
+/// Note: `localhost.` (with trailing dot) is included because some browsers normalize localhost to localhost.
+pub const CORS_ALLOWED_ORIGINS: &[&str] = &[
+    "http://127.0.0.1:8081",
+    "http://localhost:8081",
+    "http://localhost.:8081",
+];

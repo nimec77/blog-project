@@ -84,15 +84,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Start HTTP server with CORS
     let http_server = HttpServer::new(move || {
-        // Configure CORS for WASM frontend
-        let cors = Cors::default()
-            .allowed_origin(constants::CORS_ALLOWED_ORIGIN)
+        // Configure CORS for WASM frontend (multiple origins)
+        let mut cors = Cors::default()
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
                 http::header::CONTENT_TYPE,
             ])
             .max_age(3600);
+
+        for origin in constants::CORS_ALLOWED_ORIGINS {
+            cors = cors.allowed_origin(origin);
+        }
 
         App::new()
             .wrap(cors)
