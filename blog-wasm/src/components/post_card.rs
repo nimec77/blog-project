@@ -1,5 +1,6 @@
 //! Post card component for displaying a single post.
 
+use web_sys::window;
 use yew::prelude::*;
 
 use blog_shared::PostDto;
@@ -43,7 +44,15 @@ pub fn post_card(props: &PostCardProps) -> Html {
         let on_delete = props.on_delete.clone();
         Callback::from(move |_: MouseEvent| {
             if let Some(ref cb) = on_delete {
-                cb.emit(post_id);
+                // Show confirmation dialog before deleting
+                if let Some(win) = window() {
+                    if win
+                        .confirm_with_message("Are you sure you want to delete this post?")
+                        .unwrap_or(false)
+                    {
+                        cb.emit(post_id);
+                    }
+                }
             }
         })
     };
