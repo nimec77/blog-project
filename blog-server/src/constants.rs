@@ -13,4 +13,4 @@ pub const DEFAULT_LIMIT: i64 = 10;
 pub const DEFAULT_OFFSET: i64 = 0;
 
 /// Allowed CORS origin for WASM frontend.
-pub const CORS_ALLOWED_ORIGIN: &str = "http://localhost:8081";
+pub const CORS_ALLOWED_ORIGIN: &str = "http://127.0.0.1:8081";

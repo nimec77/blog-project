@@ -11,8 +11,8 @@ use crate::api;
 /// Login form properties.
 #[derive(Properties, PartialEq)]
 pub struct LoginFormProps {
-    /// Callback when login succeeds.
-    pub on_success: Callback<String>,
+    /// Callback when login succeeds (user_id, username).
+    pub on_success: Callback<(i64, String)>,
 }
 
 /// Login form component.
@@ -67,7 +67,7 @@ pub fn login_form(props: &LoginFormProps) -> Html {
                 match api::login(req).await {
                     Ok(response) => {
                         api::set_token(&response.token);
-                        on_success.emit(response.user.username);
+                        on_success.emit((response.user.id, response.user.username));
                     }
                     Err(e) => {
                         error.set(Some(e.message));

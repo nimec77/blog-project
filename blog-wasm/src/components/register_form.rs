@@ -11,8 +11,8 @@ use crate::api;
 /// Register form properties.
 #[derive(Properties, PartialEq)]
 pub struct RegisterFormProps {
-    /// Callback when registration succeeds.
-    pub on_success: Callback<String>,
+    /// Callback when registration succeeds (user_id, username).
+    pub on_success: Callback<(i64, String)>,
 }
 
 /// Register form component.
@@ -79,7 +79,7 @@ pub fn register_form(props: &RegisterFormProps) -> Html {
                 match api::register(req).await {
                     Ok(response) => {
                         api::set_token(&response.token);
-                        on_success.emit(response.user.username);
+                        on_success.emit((response.user.id, response.user.username));
                     }
                     Err(e) => {
                         error.set(Some(e.message));

@@ -6,9 +6,10 @@ mod api;
 mod components;
 mod constants;
 
+use blog_shared::PostDto;
 use yew::prelude::*;
 
-use components::{LoginForm, RegisterForm};
+use components::{LoginForm, PostForm, PostList, RegisterForm};
 
 /// Application view/page.
 #[derive(Clone, PartialEq)]
@@ -16,23 +17,31 @@ enum Page {
     Posts,
     Login,
     Register,
+    NewPost,
+    EditPost(i64),
+}
+
+/// User info stored in app state.
+#[derive(Clone, PartialEq, Default)]
+struct UserInfo {
+    id: Option<i64>,
+    username: Option<String>,
 }
 
 /// Main application component.
 #[function_component(App)]
 fn app() -> Html {
     let page = use_state(|| Page::Posts);
-    let username = use_state(|| None::<String>);
+    let user_info = use_state(UserInfo::default);
     let is_authenticated = use_state(|| api::is_authenticated());
+    let editing_post = use_state(|| None::<PostDto>);
 
     // Check for existing token on mount
     {
-        let username = username.clone();
         let is_authenticated = is_authenticated.clone();
         use_effect_with((), move |_| {
             if api::is_authenticated() {
                 is_authenticated.set(true);
-                // We don't have username stored, so leave it as None
             }
             || ()
         });
@@ -40,10 +49,10 @@ fn app() -> Html {
 
     let on_logout = {
         let page = page.clone();
-        let username = username.clone();
+        let user_info = user_info.clone();
         let is_authenticated = is_authenticated.clone();
         Callback::from(move |_| {
-            username.set(None);
+            user_info.set(UserInfo::default());
             is_authenticated.set(false);
             page.set(Page::Posts);
         })
@@ -51,10 +60,13 @@ fn app() -> Html {
 
     let on_auth_success = {
         let page = page.clone();
-        let username = username.clone();
+        let user_info = user_info.clone();
         let is_authenticated = is_authenticated.clone();
-        Callback::from(move |name: String| {
-            username.set(Some(name));
+        Callback::from(move |(id, name): (i64, String)| {
+            user_info.set(UserInfo {
+                id: Some(id),
+                username: Some(name),
+            });
             is_authenticated.set(true);
             page.set(Page::Posts);
         })
@@ -84,11 +96,41 @@ fn app() -> Html {
         })
     };
 
-    let main_content = match *page {
+    let on_new_post_click = {
+        let page = page.clone();
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            page.set(Page::NewPost);
+        })
+    };
+
+    let on_edit_post = {
+        let page = page.clone();
+        Callback::from(move |post_id: i64| {
+            page.set(Page::EditPost(post_id));
+        })
+    };
+
+    let on_post_created = {
+        let page = page.clone();
+        Callback::from(move |_post: PostDto| {
+            page.set(Page::Posts);
+        })
+    };
+
+    let on_post_cancel = {
+        let page = page.clone();
+        Callback::from(move |_| {
+            page.set(Page::Posts);
+        })
+    };
+
+    let main_content = match (*page).clone() {
         Page::Posts => html! {
-            <div class="post-list">
-                <p class="empty-state">{"Posts will be displayed here"}</p>
-            </div>
+            <PostList
+                current_user_id={user_info.id}
+                on_edit={Some(on_edit_post.clone())}
+            />
         },
         Page::Login => html! {
             <LoginForm on_success={on_auth_success.clone()} />
@@ -96,6 +138,23 @@ fn app() -> Html {
         Page::Register => html! {
             <RegisterForm on_success={on_auth_success.clone()} />
         },
+        Page::NewPost => html! {
+            <PostForm
+                on_success={on_post_created.clone()}
+                on_cancel={Some(on_post_cancel.clone())}
+            />
+        },
+        Page::EditPost(_post_id) => {
+            // For edit, we need to fetch the post first
+            // For now, show a placeholder - we'll implement proper routing later
+            html! {
+                <PostForm
+                    post={(*editing_post).clone()}
+                    on_success={on_post_created.clone()}
+                    on_cancel={Some(on_post_cancel.clone())}
+                />
+            }
+        }
     };
 
     html! {
@@ -103,22 +162,27 @@ fn app() -> Html {
             <header class="header">
                 <h1>{"Blog Platform"}</h1>
                 <nav>
-                    <a href="/" onclick={on_posts_click}>{"Posts"}</a>
+                    <a href="/" onclick={on_posts_click.clone()}>{"Posts"}</a>
                     if *is_authenticated {
-                        <div class="user-info">
-                            if let Some(ref name) = *username {
-                                <span>{format!("Hi, {}", name)}</span>
-                            }
-                            <button class="btn btn-secondary" onclick={
-                                let on_logout = on_logout.clone();
-                                move |_| {
-                                    api::clear_token();
-                                    on_logout.emit(());
+                        <>
+                            <a href="/posts/new" onclick={on_new_post_click} class="btn btn-primary btn-sm">
+                                {"New Post"}
+                            </a>
+                            <div class="user-info">
+                                if let Some(ref name) = user_info.username {
+                                    <span>{format!("Hi, {}", name)}</span>
                                 }
-                            }>
-                                {"Logout"}
-                            </button>
-                        </div>
+                                <button class="btn btn-secondary" onclick={
+                                    let on_logout = on_logout.clone();
+                                    move |_| {
+                                        api::clear_token();
+                                        on_logout.emit(());
+                                    }
+                                }>
+                                    {"Logout"}
+                                </button>
+                            </div>
+                        </>
                     } else {
                         <>
                             <a href="/login" onclick={on_login_click}>{"Login"}</a>
