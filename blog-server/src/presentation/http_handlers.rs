@@ -17,6 +17,8 @@ pub fn api_routes() -> Scope {
         // Auth (public)
         .service(register)
         .service(login)
+        // Auth (protected)
+        .service(get_me)
         // Posts (mixed: list/get are public, create/update/delete require auth)
         .service(list_posts)
         .service(get_post)
@@ -49,6 +51,16 @@ async fn login(
 ) -> Result<impl Responder, AppError> {
     let response = service.login(payload.into_inner()).await?;
     Ok(HttpResponse::Ok().json(response))
+}
+
+/// Returns the current authenticated user's info.
+#[get("/auth/me")]
+async fn get_me(
+    auth: AuthenticatedUser,
+    service: web::Data<AuthService>,
+) -> Result<impl Responder, AppError> {
+    let user = service.get_user_by_id(auth.user_id).await?;
+    Ok(HttpResponse::Ok().json(user))
 }
 
 /// Query parameters for listing posts.

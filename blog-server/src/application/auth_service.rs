@@ -66,6 +66,18 @@ impl AuthService {
         })
     }
 
+    /// Gets a user by ID (for session restoration).
+    #[instrument(skip(self))]
+    pub async fn get_user_by_id(&self, user_id: i64) -> Result<UserDto, AppError> {
+        let user = self
+            .user_repo
+            .find_by_id(user_id)
+            .await?
+            .ok_or(AppError::UserNotFound)?;
+
+        Ok(user_to_dto(&user))
+    }
+
     /// Logs in an existing user.
     #[instrument(skip(self, req), fields(username = %req.username))]
     pub async fn login(&self, req: LoginRequest) -> Result<AuthResponse, AppError> {

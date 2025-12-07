@@ -16,6 +16,23 @@ impl UserRepository {
         Self { pool }
     }
 
+    /// Finds a user by ID.
+    pub async fn find_by_id(&self, id: i64) -> Result<Option<User>, AppError> {
+        let user = sqlx::query_as!(
+            User,
+            r#"
+            SELECT id as "id!", username, email, password_hash, created_at as "created_at: _"
+            FROM users
+            WHERE id = ?
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(user)
+    }
+
     /// Finds a user by username.
     pub async fn find_by_username(&self, username: &str) -> Result<Option<User>, AppError> {
         let user = sqlx::query_as!(

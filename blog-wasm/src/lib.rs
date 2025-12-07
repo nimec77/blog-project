@@ -7,6 +7,7 @@ mod components;
 mod constants;
 
 use blog_shared::PostDto;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 use components::{LoginForm, PostForm, PostList, RegisterForm};
@@ -36,12 +37,30 @@ fn app() -> Html {
     let is_authenticated = use_state(|| api::is_authenticated());
     let editing_post = use_state(|| None::<PostDto>);
 
-    // Check for existing token on mount
+    // Check for existing token on mount and restore user session
     {
         let is_authenticated = is_authenticated.clone();
+        let user_info = user_info.clone();
         use_effect_with((), move |_| {
             if api::is_authenticated() {
-                is_authenticated.set(true);
+                let is_authenticated = is_authenticated.clone();
+                let user_info = user_info.clone();
+                spawn_local(async move {
+                    match api::get_me().await {
+                        Ok(user) => {
+                            user_info.set(UserInfo {
+                                id: Some(user.id),
+                                username: Some(user.username),
+                            });
+                            is_authenticated.set(true);
+                        }
+                        Err(_) => {
+                            // Token is invalid, clear it
+                            api::clear_token();
+                            is_authenticated.set(false);
+                        }
+                    }
+                });
             }
             || ()
         });

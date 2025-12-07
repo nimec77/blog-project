@@ -6,7 +6,7 @@ use web_sys::window;
 
 use blog_shared::{
     AuthResponse, CreatePostRequest, LoginRequest, PostDto, PostListResponse, RegisterRequest,
-    UpdatePostRequest,
+    UpdatePostRequest, UserDto,
 };
 
 use crate::constants::{API_PORT, TOKEN_STORAGE_KEY};
@@ -52,6 +52,24 @@ pub fn clear_token() {
 /// Checks if user is authenticated.
 pub fn is_authenticated() -> bool {
     get_token().is_some()
+}
+
+/// Gets the current authenticated user's info.
+pub async fn get_me() -> Result<UserDto, ApiError> {
+    let url = format!("{}/api/auth/me", get_api_base_url());
+    let token = get_token().ok_or(ApiError {
+        message: "Not authenticated".into(),
+    })?;
+
+    let response = Request::get(&url)
+        .header("Authorization", &format!("Bearer {}", token))
+        .send()
+        .await
+        .map_err(|e| ApiError {
+            message: e.to_string(),
+        })?;
+
+    handle_response(response).await
 }
 
 /// Registers a new user.
