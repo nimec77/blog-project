@@ -45,13 +45,12 @@ pub fn post_card(props: &PostCardProps) -> Html {
         Callback::from(move |_: MouseEvent| {
             if let Some(ref cb) = on_delete {
                 // Show confirmation dialog before deleting
-                if let Some(win) = window() {
-                    if win
+                if let Some(win) = window()
+                    && win
                         .confirm_with_message("Are you sure you want to delete this post?")
                         .unwrap_or(false)
-                    {
-                        cb.emit(post_id);
-                    }
+                {
+                    cb.emit(post_id);
                 }
             }
         })

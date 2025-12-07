@@ -20,7 +20,7 @@ pub enum BlogClient {
     /// HTTP client variant.
     Http(HttpClient),
     /// gRPC client variant.
-    Grpc(GrpcClient),
+    Grpc(Box<GrpcClient>),
 }
 
 impl BlogClient {
@@ -31,7 +31,7 @@ impl BlogClient {
 
     /// Creates a new gRPC client.
     pub async fn grpc(addr: &str) -> Result<Self, ClientError> {
-        Ok(Self::Grpc(GrpcClient::connect(addr).await?))
+        Ok(Self::Grpc(Box::new(GrpcClient::connect(addr).await?)))
     }
 
     /// Sets the authentication token.

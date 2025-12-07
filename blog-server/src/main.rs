@@ -12,20 +12,14 @@ use tonic_reflection::server::Builder as ReflectionBuilder;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-mod application;
-mod constants;
-mod data;
-mod domain;
-mod infrastructure;
-mod presentation;
-
-use application::{AuthService, BlogService};
-use data::{PostRepository, UserRepository};
-use infrastructure::{config::Config, database};
-use presentation::grpc_service::proto::auth_service_server::AuthServiceServer;
-use presentation::grpc_service::proto::blog_service_server::BlogServiceServer;
-use presentation::grpc_service::{GrpcAuthService, GrpcBlogService};
-use presentation::{JwtSecret, api_routes};
+use blog_server::application::{AuthService, BlogService};
+use blog_server::constants;
+use blog_server::data::{PostRepository, UserRepository};
+use blog_server::infrastructure::{config::Config, database};
+use blog_server::presentation::grpc_service::proto::auth_service_server::AuthServiceServer;
+use blog_server::presentation::grpc_service::proto::blog_service_server::BlogServiceServer;
+use blog_server::presentation::grpc_service::{GrpcAuthService, GrpcBlogService};
+use blog_server::presentation::{JwtSecret, api_routes};
 
 /// File descriptor set for gRPC reflection.
 const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("blog_descriptor");
