@@ -11,7 +11,7 @@
 | 5. Posts API | ✅ Complete | 5/5 | Full CRUD works |
 | 6. gRPC API | ✅ Complete | 5/5 | HTTP + gRPC parallel + reflection |
 | 7. Client Library | ✅ Complete | 4/4 | HTTP + gRPC clients |
-| 8. CLI | ⬜ Not Started | 0/4 | — |
+| 8. CLI | ✅ Complete | 4/4 | Full CLI with token persistence |
 | 9. WASM Frontend | ⬜ Not Started | 0/5 | — |
 | 10. Final Polish | ⬜ Not Started | 0/3 | — |
 
@@ -170,10 +170,10 @@ grpcurl -plaintext \
 
 **Goal:** Full CLI for all operations.
 
-- [ ] 8.1 Setup clap with commands and global flags
-- [ ] 8.2 Implement auth commands (register, login)
-- [ ] 8.3 Implement post commands (create, get, update, delete, list)
-- [ ] 8.4 Add token persistence (`.blog_token` file)
+- [x] 8.1 Setup clap with commands and global flags
+- [x] 8.2 Implement auth commands (register, login)
+- [x] 8.3 Implement post commands (create, get, update, delete, list)
+- [x] 8.4 Add token persistence (`.blog_token` file)
 
 **✓ Test:**
 ```bash

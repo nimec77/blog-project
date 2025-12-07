@@ -3,11 +3,14 @@
 mod commands;
 mod constants;
 
+use std::fs;
+use std::path::PathBuf;
+
 use blog_client::{BlogClient, ClientError};
 use clap::{Parser, Subcommand};
 use tracing_subscriber::EnvFilter;
 
-use constants::{DEFAULT_GRPC_URL, DEFAULT_HTTP_URL};
+use constants::{DEFAULT_GRPC_URL, DEFAULT_HTTP_URL, TOKEN_FILE};
 
 /// Blog platform CLI client.
 #[derive(Parser)]
@@ -101,7 +104,20 @@ async fn main() -> Result<(), ClientError> {
 
     let cli = Cli::parse();
     let mut client = create_client(&cli).await?;
-    commands::execute(&mut client, cli.command).await
+
+    // Load saved token
+    if let Some(token) = load_token() {
+        client.set_token(token);
+    }
+
+    // Execute command and save token if returned
+    if let Some(token) = commands::execute(&mut client, cli.command).await?
+        && let Err(e) = save_token(&token)
+    {
+        eprintln!("Warning: Failed to save token: {}", e);
+    }
+
+    Ok(())
 }
 
 /// Creates a client based on CLI flags.
@@ -113,4 +129,26 @@ async fn create_client(cli: &Cli) -> Result<BlogClient, ClientError> {
         let url = cli.server.as_deref().unwrap_or(DEFAULT_HTTP_URL);
         Ok(BlogClient::http(url))
     }
+}
+
+/// Returns the token file path.
+fn token_path() -> Option<PathBuf> {
+    dirs::home_dir().map(|h| h.join(TOKEN_FILE))
+}
+
+/// Loads token from file if it exists.
+fn load_token() -> Option<String> {
+    let path = token_path()?;
+    fs::read_to_string(path)
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+/// Saves token to file.
+fn save_token(token: &str) -> std::io::Result<()> {
+    if let Some(path) = token_path() {
+        fs::write(path, token)?;
+    }
+    Ok(())
 }
