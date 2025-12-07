@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A comprehensive Rust training project implementing a full-stack blog platform with four interconnected crates in a single Cargo workspace. The project demonstrates real-world development patterns including clean architecture, JWT authentication, database integration, and multi-transport API support (HTTP + gRPC).
+A comprehensive Rust training project implementing a full-stack blog platform with five crates in a single Cargo workspace. The project demonstrates real-world development patterns including clean architecture, JWT authentication, database integration, and multi-transport API support (HTTP + gRPC).
 
 **Goal:** Build a production-ready personal blog system with user registration, JWT protection, and secure database storage that can be deployed to a custom domain.
 
@@ -16,12 +16,17 @@ A comprehensive Rust training project implementing a full-stack blog platform wi
 blog_project/
 ├── Cargo.toml                    # Workspace configuration
 ├── README.md                     # Project description, startup instructions
-├── blog-server/                  # Crate 1: Blog web server
+├── blog-shared/                  # Crate 1: Shared types and DTOs
+│   ├── Cargo.toml
+│   └── src/
+│       ├── lib.rs                # DTOs (User, Post, AuthResponse, etc.)
+│       └── constants.rs          # Shared constants
+├── blog-server/                  # Crate 2: Blog web server
 │   ├── Cargo.toml
 │   ├── build.rs
 │   ├── migrations/
-│   │   ├── 20250101000001_create_users.sql
-│   │   └── 20250101000002_create_posts.sql
+│   │   ├── 20251205151238_create_users.sql
+│   │   └── 20251205151239_create_posts.sql
 │   ├── proto/
 │   │   └── blog.proto
 │   └── src/
@@ -49,7 +54,7 @@ blog_project/
 │           ├── middleware.rs     # JWT middleware for actix-web
 │           ├── http_handlers.rs  # HTTP handlers for actix-web
 │           └── grpc_service.rs   # gRPC service for tonic
-├── blog-client/                  # Crate 2: Client Library
+├── blog-client/                  # Crate 3: Client Library
 │   ├── Cargo.toml
 │   ├── build.rs
 │   ├── proto/
@@ -59,11 +64,11 @@ blog_project/
 │       ├── http_client.rs
 │       ├── grpc_client.rs
 │       └── error.rs
-├── blog-cli/                     # Crate 3: CLI Client
+├── blog-cli/                     # Crate 4: CLI Client
 │   ├── Cargo.toml
 │   └── src/
 │       └── main.rs
-└── blog-wasm/                    # Crate 4: WASM Frontend
+└── blog-wasm/                    # Crate 5: WASM Frontend
     ├── Cargo.toml
     └── src/
         └── lib.rs
@@ -73,14 +78,33 @@ blog_project/
 
 ## Crate Specifications
 
-### 1. blog-server (Binary Crate)
+### 1. blog-shared (Library Crate)
+
+**Purpose:** Shared types and DTOs used across all crates.
+
+**Exports:**
+- `UserDto` - User information (no password hash)
+- `PostDto` - Post with author information
+- `AuthResponse` - JWT token + user
+- `RegisterRequest`, `LoginRequest` - Auth payloads
+- `CreatePostRequest`, `UpdatePostRequest` - Post payloads
+- `PostListResponse` - Paginated posts
+- Constants (environment variables, default ports)
+
+**Dependencies:**
+- serde (JSON serialization)
+- chrono (DateTime types)
+
+---
+
+### 2. blog-server (Binary Crate)
 
 **Purpose:** Backend server hosting both HTTP and gRPC APIs.
 
 **Technology Stack:**
-- **HTTP Server:** actix-web (port 3000/8080)
+- **HTTP Server:** actix-web (port 8080)
 - **gRPC Server:** tonic (port 50051)
-- **Database:** PostgreSQL via sqlx
+- **Database:** SQLite via sqlx
 - **Authentication:** JWT (jsonwebtoken) + Argon2 password hashing
 - **Logging:** tracing + tracing-subscriber
 - **Error Handling:** thiserror
@@ -108,8 +132,8 @@ blog_project/
 - `CreatePost`, `GetPost`, `UpdatePost`, `DeletePost`, `ListPosts` - CRUD operations
 
 **Database Schema:**
-- `users` table: id (BIGSERIAL), username, email, password_hash, created_at
-- `posts` table: id (BIGSERIAL), title, content, author_id (FK), created_at, updated_at
+- `users` table: id (INTEGER PRIMARY KEY AUTOINCREMENT), username, email, password_hash, created_at
+- `posts` table: id (INTEGER PRIMARY KEY AUTOINCREMENT), title, content, author_id (FK), created_at, updated_at
 
 **Security Features:**
 - Argon2 password hashing
@@ -119,7 +143,7 @@ blog_project/
 
 ---
 
-### 2. blog-client (Library Crate)
+### 3. blog-client (Library Crate)
 
 **Purpose:** Unified client library for HTTP and gRPC communication with the server.
 
@@ -152,7 +176,7 @@ struct BlogClient {
 
 ---
 
-### 3. blog-cli (Binary Crate)
+### 4. blog-cli (Binary Crate)
 
 **Purpose:** Command-line interface for testing and interacting with the blog server.
 
@@ -180,7 +204,7 @@ blog-cli list [--limit 10] [--offset 0]
 
 ---
 
-### 4. blog-wasm (Library Crate - cdylib)
+### 5. blog-wasm (Library Crate - cdylib)
 
 **Purpose:** WebAssembly frontend running in the browser.
 
@@ -209,7 +233,7 @@ blog-cli list [--limit 10] [--offset 0]
 ## Implementation Steps
 
 ### Step 1: Workspace Setup
-- [x] Initialize Cargo workspace with four crates
+- [x] Initialize Cargo workspace with five crates
 - [ ] Configure shared dependencies in `[workspace.dependencies]`
 - [ ] Set up blog-wasm with `crate-type = ["cdylib"]`
 - [ ] Create folder structure
@@ -278,9 +302,9 @@ tracing-subscriber = "0.3"
 ```
 
 ### blog-server
-- actix-web, actix-web-httpauth, actix-cors
+- actix-web, actix-cors
 - tonic, tonic-build, prost, prost-types
-- sqlx (PostgreSQL features)
+- sqlx (SQLite features)
 - jsonwebtoken, argon2
 - dotenvy
 
@@ -302,8 +326,11 @@ tracing-subscriber = "0.3"
 ## Environment Variables
 
 ```env
-DATABASE_URL=postgres://user:password@localhost/blog_db
+DATABASE_URL=sqlite:blog.db
 JWT_SECRET=your-secret-key-minimum-32-characters-long
+HTTP_PORT=8080
+GRPC_PORT=50051
+RUST_LOG=blog_server=debug,info
 ```
 
 ---

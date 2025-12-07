@@ -118,8 +118,8 @@ blog-project/
 │   ├── build.rs
 │   ├── blog.db                   # SQLite (git-ignored)
 │   ├── migrations/
-│   │   ├── 001_create_users.sql
-│   │   └── 002_create_posts.sql
+│   │   ├── 20251205151238_create_users.sql
+│   │   └── 20251205151239_create_posts.sql
 │   ├── proto/
 │   │   └── blog.proto
 │   └── src/
@@ -198,12 +198,28 @@ blog-project/
 
 ```
 blog-shared ◄─── blog-server
-     ▲             
-     │             
+     ▲
+     │
      ├──────── blog-client ◄─── blog-cli
      │
      └──────── blog-wasm
 ```
+
+### Why blog-client and blog-wasm are Separate
+
+Despite similar API operations, these crates serve fundamentally different purposes and cannot be merged:
+
+| Aspect | blog-client | blog-wasm |
+|--------|-------------|-----------|
+| **Runtime** | Native (tokio) | Browser (WASM) |
+| **HTTP Library** | reqwest | gloo-net |
+| **Transport Support** | HTTP + gRPC | HTTP only (gRPC not supported in browsers) |
+| **Error Handling** | Rich `ClientError` enum for programmatic handling | Simple `ApiError` for UI display |
+| **Token Storage** | In-memory (per-instance) | localStorage (persistent across sessions) |
+| **Use Case** | Library for CLI and native clients | UI-focused browser application |
+| **Target** | Native binaries | WebAssembly module |
+
+**KISS Principle Applied**: Forcing these into a single abstraction would require complex feature flags, generic traits over incompatible types, and runtime-specific code paths. Keeping them separate is simpler and clearer.
 
 ---
 
