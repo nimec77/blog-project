@@ -54,6 +54,9 @@ clap = { version = "4", features = ["derive"] }
 # Environment
 dotenvy = "0.15"
 
+# Build dependencies (shared)
+tonic-prost-build = "0.14.2"
+
 # Internal crates
 blog-shared = { path = "blog-shared" }
 blog-client = { path = "blog-client" }

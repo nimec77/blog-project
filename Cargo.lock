@@ -434,10 +434,14 @@ name = "blog-client"
 version = "0.1.0"
 dependencies = [
  "blog-shared",
+ "prost",
  "reqwest",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
+ "tonic",
+ "tonic-prost-build",
 ]
 
 [[package]]

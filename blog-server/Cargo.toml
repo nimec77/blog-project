@@ -23,4 +23,4 @@ tonic-prost = "0.14.2"
 tonic-reflection = "0.14.2"
 
 [build-dependencies]
-tonic-prost-build = "0.14.2"
+tonic-prost-build.workspace = true
