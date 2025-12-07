@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 blog-client.workspace = true
+blog-shared.workspace = true
 tokio.workspace = true
 clap.workspace = true
 tracing.workspace = true

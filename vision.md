@@ -109,7 +109,8 @@ blog-project/
 ├── blog-shared/                  # Crate 1: Shared types
 │   ├── Cargo.toml
 │   └── src/
-│       └── lib.rs                # User, Post, AuthResponse DTOs
+│       ├── lib.rs                # User, Post, AuthResponse DTOs
+│       └── constants.rs          # Shared constants
 │
 ├── blog-server/                  # Crate 2: Web server
 │   ├── Cargo.toml
@@ -122,6 +123,7 @@ blog-project/
 │   │   └── blog.proto
 │   └── src/
 │       ├── main.rs
+│       ├── constants.rs          # Server constants
 │       ├── domain/
 │       │   ├── mod.rs
 │       │   ├── user.rs           # User entity
@@ -160,7 +162,9 @@ blog-project/
 ├── blog-cli/                     # Crate 4: CLI client
 │   ├── Cargo.toml
 │   └── src/
-│       └── main.rs
+│       ├── main.rs               # Entry point, CLI parsing
+│       ├── commands.rs           # Command execution logic
+│       └── constants.rs          # CLI constants
 │
 └── blog-wasm/                    # Crate 5: WASM frontend
     ├── Cargo.toml
