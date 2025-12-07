@@ -3,7 +3,8 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use actix_web::{App, HttpServer, web};
+use actix_cors::Cors;
+use actix_web::{App, HttpServer, http, web};
 use tokio::net::TcpListener;
 use tokio_stream::wrappers::TcpListenerStream;
 use tonic::transport::Server as GrpcServer;
@@ -81,9 +82,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(reflection_service)
         .serve_with_incoming(TcpListenerStream::new(grpc_listener));
 
-    // Start HTTP server
+    // Start HTTP server with CORS
     let http_server = HttpServer::new(move || {
+        // Configure CORS for WASM frontend
+        let cors = Cors::default()
+            .allowed_origin(constants::CORS_ALLOWED_ORIGIN)
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+            .allowed_headers(vec![
+                http::header::AUTHORIZATION,
+                http::header::CONTENT_TYPE,
+            ])
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .app_data(web::Data::new(jwt_secret.clone()))
             .app_data(web::Data::new(auth_service.clone()))
             .app_data(web::Data::new(blog_service.clone()))

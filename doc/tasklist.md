@@ -12,7 +12,7 @@
 | 6. gRPC API | ✅ Complete | 5/5 | HTTP + gRPC parallel + reflection |
 | 7. Client Library | ✅ Complete | 4/4 | HTTP + gRPC clients |
 | 8. CLI | ✅ Complete | 4/4 | Full CLI with token persistence |
-| 9. WASM Frontend | ⬜ Not Started | 0/5 | — |
+| 9. WASM Frontend | 🔄 In Progress | 5/6 | CORS enabled |
 | 10. Final Polish | ⬜ Not Started | 0/3 | — |
 
 **Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ⚠️ Blocked
@@ -190,17 +190,18 @@ cargo run -p blog-cli -- --grpc list  # Test gRPC transport
 
 **Goal:** Browser UI for all operations.
 
-- [ ] 9.1 Setup Yew app structure
-- [ ] 9.2 Create `api.rs` (HTTP client)
-- [ ] 9.3 Create auth components (login, register forms)
+- [x] 9.1 Setup Yew app structure
+- [x] 9.2 Create `api.rs` (HTTP client)
+- [x] 9.3 Create auth components (login, register forms)
 - [ ] 9.4 Create post components (list, form, card)
-- [ ] 9.5 Add localStorage token handling
+- [x] 9.5 Add localStorage token handling
+- [x] 9.6 Add CORS to blog-server for WASM frontend
 
 **✓ Test:**
 ```bash
 cd blog-wasm
 trunk serve
-# Open http://localhost:8080
+# Open http://localhost:8081
 # Register, login, create/edit/delete posts in browser
 ```
 

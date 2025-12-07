@@ -22,6 +22,7 @@
 | Database | SQLite via sqlx | Compile-time checked queries |
 | Auth | jsonwebtoken + argon2 | JWT tokens, secure password hashing |
 | Serialization | serde | JSON for HTTP, protobuf for gRPC |
+| CORS | actix-cors | Strict policy for WASM frontend |
 
 ### Client Library (blog-client)
 
