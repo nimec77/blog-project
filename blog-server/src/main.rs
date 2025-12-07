@@ -4,6 +4,8 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use actix_web::{App, HttpServer, web};
+use tokio::net::TcpListener;
+use tokio_stream::wrappers::TcpListenerStream;
 use tonic::transport::Server as GrpcServer;
 use tonic_reflection::server::Builder as ReflectionBuilder;
 use tracing::info;
@@ -63,23 +65,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // gRPC server address
     let grpc_addr: SocketAddr = format!("0.0.0.0:{}", config.grpc_port).parse()?;
 
-    info!(
-        http_port = config.http_port,
-        grpc_port = config.grpc_port,
-        "Starting servers"
-    );
-
     // Create reflection service for gRPC
     let reflection_service = ReflectionBuilder::configure()
         .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
         .build_v1()?;
 
-    // Start gRPC server in background
+    // Bind gRPC listener first to log when ready
+    let grpc_listener = TcpListener::bind(&grpc_addr).await?;
+    info!(port = config.grpc_port, "gRPC server listening");
+
+    // Start gRPC server with the listener
     let grpc_server = GrpcServer::builder()
         .add_service(AuthServiceServer::new(grpc_auth_service))
         .add_service(BlogServiceServer::new(grpc_blog_service))
         .add_service(reflection_service)
-        .serve(grpc_addr);
+        .serve_with_incoming(TcpListenerStream::new(grpc_listener));
 
     // Start HTTP server
     let http_server = HttpServer::new(move || {
@@ -89,8 +89,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .app_data(web::Data::new(blog_service.clone()))
             .service(web::scope("/api").service(api_routes()))
     })
-    .bind(("0.0.0.0", config.http_port))?
-    .run();
+    .bind(("0.0.0.0", config.http_port))?;
+
+    info!(port = config.http_port, "HTTP server listening");
+
+    let http_server = http_server.run();
 
     // Run both servers concurrently
     tokio::select! {
