@@ -10,7 +10,7 @@
 | 4. Auth API | ✅ Complete | 4/4 | Register + Login work |
 | 5. Posts API | ✅ Complete | 5/5 | Full CRUD works |
 | 6. gRPC API | ✅ Complete | 5/5 | HTTP + gRPC parallel + reflection |
-| 7. Client Library | ⬜ Not Started | 0/4 | — |
+| 7. Client Library | ✅ Complete | 4/4 | HTTP + gRPC clients |
 | 8. CLI | ⬜ Not Started | 0/4 | — |
 | 9. WASM Frontend | ⬜ Not Started | 0/5 | — |
 | 10. Final Polish | ⬜ Not Started | 0/3 | — |
@@ -157,10 +157,10 @@ grpcurl -plaintext \
 
 **Goal:** Unified client for HTTP and gRPC.
 
-- [ ] 7.1 Create `http_client.rs`
-- [ ] 7.2 Create `grpc_client.rs`
-- [ ] 7.3 Create `error.rs` (`ClientError`)
-- [ ] 7.4 Create unified `BlogClient` in `lib.rs`
+- [x] 7.1 Create `http_client.rs`
+- [x] 7.2 Create `grpc_client.rs`
+- [x] 7.3 Create `error.rs` (`ClientError`)
+- [x] 7.4 Create unified `BlogClient` in `lib.rs`
 
 **✓ Test:** `cargo test -p blog-client` (unit tests with mocks)
 
