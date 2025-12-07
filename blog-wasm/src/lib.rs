@@ -2,6 +2,7 @@
 //!
 //! Yew-based web application for the blog platform.
 
+mod api;
 mod constants;
 
 use yew::prelude::*;
