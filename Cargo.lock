@@ -434,6 +434,7 @@ name = "blog-client"
 version = "0.1.0"
 dependencies = [
  "blog-shared",
+ "chrono",
  "prost",
  "reqwest",
  "serde",
@@ -441,6 +442,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tonic",
+ "tonic-prost",
  "tonic-prost-build",
 ]
 

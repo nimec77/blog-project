@@ -39,6 +39,8 @@ sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono"] }
 
 # gRPC
 tonic = "0.14.2"
+tonic-prost = "0.14.2"
+tonic-reflection = "0.14.2"
 prost = "0.14.1"
 tokio-stream = "0.1"
 

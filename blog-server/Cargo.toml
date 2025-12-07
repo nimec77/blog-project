@@ -18,10 +18,10 @@ thiserror.workspace = true
 jsonwebtoken.workspace = true
 argon2.workspace = true
 tonic.workspace = true
+tonic-prost.workspace = true
+tonic-reflection.workspace = true
 prost.workspace = true
 tokio-stream.workspace = true
-tonic-prost = "0.14.2"
-tonic-reflection = "0.14.2"
 
 [build-dependencies]
 tonic-prost-build.workspace = true

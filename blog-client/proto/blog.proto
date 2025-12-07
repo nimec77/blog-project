@@ -1,0 +1,101 @@
+syntax = "proto3";
+package blog;
+
+// ============================================================================
+// Auth Service
+// ============================================================================
+
+service AuthService {
+  // Register a new user
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  // Login an existing user
+  rpc Login(LoginRequest) returns (AuthResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string token = 1;
+  User user = 2;
+}
+
+message User {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string created_at = 4;  // ISO 8601 format
+}
+
+// ============================================================================
+// Blog Service
+// ============================================================================
+
+service BlogService {
+  // Create a new post (requires authentication)
+  rpc CreatePost(CreatePostRequest) returns (PostResponse);
+  // Get a single post by ID
+  rpc GetPost(GetPostRequest) returns (PostResponse);
+  // List posts with pagination
+  rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
+  // Update a post (author only)
+  rpc UpdatePost(UpdatePostRequest) returns (PostResponse);
+  // Delete a post (author only)
+  rpc DeletePost(DeletePostRequest) returns (Empty);
+}
+
+message CreatePostRequest {
+  string token = 1;  // JWT token for authentication
+  string title = 2;
+  string content = 3;
+}
+
+message GetPostRequest {
+  int64 id = 1;
+}
+
+message ListPostsRequest {
+  int64 limit = 1;   // Default: 10
+  int64 offset = 2;  // Default: 0
+}
+
+message UpdatePostRequest {
+  string token = 1;  // JWT token for authentication
+  int64 id = 2;
+  optional string title = 3;
+  optional string content = 4;
+}
+
+message DeletePostRequest {
+  string token = 1;  // JWT token for authentication
+  int64 id = 2;
+}
+
+message Post {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  int64 author_id = 4;
+  string author_username = 5;
+  string created_at = 6;  // ISO 8601 format
+  string updated_at = 7;  // ISO 8601 format
+}
+
+message PostResponse {
+  Post post = 1;
+}
+
+message ListPostsResponse {
+  repeated Post posts = 1;
+  int64 total = 2;
+}
+
+message Empty {}

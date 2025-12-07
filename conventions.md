@@ -10,6 +10,37 @@
 
 ---
 
+## Workspace Dependencies
+
+**Shared dependencies must be defined at workspace level** in root `Cargo.toml`.
+
+### Rule
+
+When adding a dependency to a crate:
+1. Check if it's already used in another crate or in `[workspace.dependencies]`
+2. If yes → use `dependency.workspace = true` (add to workspace first if needed)
+3. If no (crate-local only) → add directly to that crate's `Cargo.toml`
+
+### Example
+
+```toml
+# Shared dependency (used by multiple crates)
+# Root Cargo.toml
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+
+# blog-server/Cargo.toml
+[dependencies]
+tokio.workspace = true  # ✅ Correct
+
+# Crate-local dependency (only used by one crate)
+# blog-server/Cargo.toml
+[dependencies]
+some-local-dep = "1.0"  # ✅ OK if not used elsewhere
+```
+
+---
+
 ## Code Style
 
 ### Imports Order

@@ -12,6 +12,8 @@ serde_json.workspace = true
 thiserror.workspace = true
 tonic.workspace = true
 prost.workspace = true
+chrono.workspace = true
+tonic-prost.workspace = true
 
 [build-dependencies]
 tonic-prost-build.workspace = true
