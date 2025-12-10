@@ -62,7 +62,20 @@ cp .env.example .env
 # Edit .env and set a secure JWT_SECRET (min 32 characters)
 ```
 
-### 2. Build and Run Server
+### 2. Initialize Database
+
+The project uses sqlx compile-time checked queries, which require the database to exist before building.
+
+```bash
+# Install sqlx-cli (one-time)
+cargo install sqlx-cli --no-default-features --features sqlite
+
+# Create database and run migrations
+sqlx database create --database-url sqlite:blog.db
+sqlx migrate run --source blog-server/migrations --database-url sqlite:blog.db
+```
+
+### 3. Build and Run Server
 
 ```bash
 # Build all crates
@@ -72,7 +85,7 @@ cargo build --workspace
 cargo run -p blog-server
 ```
 
-### 3. Test the API
+### 4. Test the API
 
 ```bash
 # Health check
@@ -454,15 +467,30 @@ cargo clippy --workspace --all-targets
 ### Database Management
 
 ```bash
-# Database is created automatically on first run
-# Location: blog.db (SQLite file)
+# Database location: blog.db (SQLite file)
 
-# Reset database (delete and restart server)
+# Initialize database (required before first build)
+sqlx database create --database-url sqlite:blog.db
+sqlx migrate run --source blog-server/migrations --database-url sqlite:blog.db
+
+# Reset database
 rm blog.db
-cargo run -p blog-server
+sqlx database create --database-url sqlite:blog.db
+sqlx migrate run --source blog-server/migrations --database-url sqlite:blog.db
+
+# Or use DATABASE_URL from .env
+source .env && sqlx migrate run --source blog-server/migrations
 ```
 
 ## Troubleshooting
+
+### Compilation errors from sqlx (e.g., "error returned from database")
+The database must exist with the correct schema before building due to compile-time query checking:
+```bash
+cargo install sqlx-cli --no-default-features --features sqlite
+sqlx database create --database-url sqlite:blog.db
+sqlx migrate run --source blog-server/migrations --database-url sqlite:blog.db
+```
 
 ### "DATABASE_URL not set"
 Copy `.env.example` to `.env` and configure values:
